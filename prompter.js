@@ -39,7 +39,7 @@ function startTeleprompter() {
 
     const teleprompter = document.getElementById('teleprompter');
     teleprompter.innerHTML = sentences.map((sentence, index) => 
-        `<span class="sentence" id="sentence-${index}">${sentence}${sentence.startsWith('[') ? '' : '.'}</span>`
+        `<span class="sentence" id="sentence-${index}">${sentence}${sentence.startsWith('[') ? '' : ''}</span>`
     ).join('');
 
     currentSentenceIndex = 0;
