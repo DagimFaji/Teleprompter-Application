@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teleprompter - Welcome</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-dark">
+    <div class="welcome-container">
+        <h1>Welcome to Your Teleprompter</h1>
+        <p>Paste your script below or select a sample prompt to get started.</p>
+        <textarea id="script-input" placeholder="Paste your script here..."></textarea>
+        <div class="sample-prompts">
+            <label for="sample-selector">Try a Sample Prompt:</label>
+            <select id="sample-selector" onchange="loadSamplePrompt()">
+                <option value="">Select a sample...</option>
+                <option value="news">News Broadcast</option>
+                <option value="presentation">Presentation</option>
+                <option value="keynote">Keynote Speech</option>
+                <option value="pitch">Product Pitch</option>
+                <option value="interview">Interview</option>
+            </select>
+        </div>
+        <button onclick="proceedToPrompter()" class="win11-button">Proceed</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
