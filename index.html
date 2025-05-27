@@ -29,6 +29,7 @@
             white-space: pre-wrap;
             position: relative;
             margin-bottom: 20px;
+            text-align: center; /* Center text horizontally */
         }
         #input-section {
             width: 100%;
@@ -164,11 +165,11 @@
                     document.querySelectorAll('.sentence').forEach(sentence => sentence.classList.remove('highlight'));
                     currentSentence.classList.add('highlight');
 
-                    // Scroll to keep highlighted sentence in view (center of teleprompter)
+                    // Scroll to keep highlighted sentence at the top of teleprompter
                     const sentenceRect = currentSentence.getBoundingClientRect();
                     const teleprompterRect = teleprompter.getBoundingClientRect();
-                    const scrollOffset = sentenceRect.top - teleprompterRect.top - teleprompter.clientHeight / 2 + sentenceRect.height / 2;
-                    teleprompter.scrollBy({ top: scrollOffset, behavior: 'smooth' });
+                    const scrollOffset = sentenceRect.top - teleprompterRect.top;
+                    teleprompter.scrollTo({ top: teleprompter.scrollTop + scrollOffset, behavior: 'smooth' });
                 }
 
                 currentSentenceIndex++;
@@ -198,41 +199,142 @@
         }
 
         // Initialize with default script
-        document.getElementById('script-input').value = `Hi, my name is Dagim Faji Dandena, and I’m from Addis Ababa, Ethiopia. I live in Adama, just a 30-minute drive from the capital. I’m thrilled to share why I’d be a great Independent Travel Manager with DreamPort.
+        document.getElementById('script-input').value = `Hi, my name is Dagim Faji Dandena,  
+and I’m from Addis Ababa, Ethiopia   
+I live in Adama,  
+just a 30-minute drive from the capital
+  
+I’m thrilled to share why I’d be  
+a great Independent Travel Manager  
+with DreamPort.  
+  
+Work Experience  
+For over four years,  
+I worked in a catering business in Addis Ababa,  
+serving clients at weddings, funerals,  
+and birthdays  
+This sharpened my customer service  
+and communication skills,  
+tailoring services to diverse needs.  
+  
+Now, I’m a Deputy IT Supervisor  
+at a textile company in Adama,  
+I support over 40 users,  
+troubleshooting hardware and software,  
+managing helpdesk systems,  
+and collaborating across departments  
+to ensure reliable operations.  
+These roles built my problem-solving  
+and interpersonal skills,  
+perfect for travel management.  
 
-Work Experience
-For over four years, I worked in catering in Addis Ababa, serving clients at weddings, funerals, and birthdays. This sharpened my customer service and communication skills, tailoring services to diverse needs.
+  
+Education  
+I hold a Bachelor’s Degree  
+in Computer Science  
+from Hawassa University, Ethiopia,  
+This gave me a strong foundation  
+in system management  
+and technical problem-solving,  
+which I’ve built on professionally.  
 
-Now, I’m a Deputy IT Supervisor at a textile company in Adama. I support over 40 users, troubleshooting hardware and software, managing helpdesk systems, and collaborating across departments to ensure reliable operations. These roles built my problem-solving and interpersonal skills, perfect for travel management.
+ 
+Why do i want to be an Independent Travel Manager because  
+I love travel—  
+exploring new places, cultures,  
+and people inspires me,  
+This role lets me combine  
+my passion for travel  
+with my knack for connecting with people  
+and delivering tailored solutions,  
+It’s a chance to grow professionally  
+and create memorable experiences  
+for clients.  
 
-Education
-I hold a Bachelor’s Degree in Computer Science from Hawassa University, Ethiopia. This gave me a strong foundation in system management and technical problem-solving, which I’ve built on professionally.
+Do i have an Experience in Sales or Customer Service  
+Yes, my catering work  
+involved direct customer service,  
+meeting clients’ unique needs  
+for events,  
+In my IT role,  
+I resolve issues for 40+ users  
+with a 95% first-contact resolution rate,  
+explaining solutions clearly,  
+These skills will help me  
+assist travel clients effectively.  
 
-Why an Independent Travel Manager?
-I love travel—exploring new places, cultures, and people inspires me. This role lets me combine my passion for travel with my knack for connecting with people and delivering tailored solutions. It’s a chance to grow professionally and create memorable experiences for clients.
+my Key Professional 
+strengths are problem-solving,  
+communication, and adaptability,
+I can explain technical concepts  
+to non-technical users,  
+which will help me present  
+travel options clearly,and also  
+I’m adaptable,  
+quickly learning new systems,  
+and eager to master DreamPort’s tools.  
 
-Experience in Sales or Customer Service?
-Yes, my catering work involved direct customer service, meeting clients’ unique needs for events. In my IT role, I resolve issues for 40+ users with a 95% first-contact resolution rate, explaining solutions clearly. These skills will help me assist travel clients effectively.
+  
+this job help me achieve your goals  
+by impacting clients’ lives,  
+It lets me build relationships,  
+create unforgettable travel experiences,  
+and develop sales and customer service skills,  
+with my love for travel The flexibility allows me  
+to take ownership of my career  
+and grow personally and professionally.  
 
-Key Professional Strengths?
-My strengths are problem-solving, communication, and adaptability. I’ve tackled complex IT issues, reducing downtime by 30%. I explain technical concepts to non-technical users, which will help me present travel options clearly. I’m adaptable, quickly learning new systems, and eager to master DreamPort’s tools.
+  
+about full-time commitments  
+My current IT role is flexible,  
+with ample free time,  
+I’m *fully prepared* to prioritize  
+DreamPort’s training  
+and make a smooth transition  
+I can dedicate myself  
+without conflicts.  
 
-How will this job help achieve your goals?
-This role aligns with my love for travel and impacting clients’ lives. It lets me build relationships, create unforgettable travel experiences, and develop sales and customer service skills. The flexibility allows me to take ownership of my career and grow personally and professionally.
+ 
+Can i commit 8+ hours a day, 5 days a week  
+Absolutely,  
+I’m ready to commit 8 hours or more,  
+5 days a week,  
+to DreamPort’s training  
+I’m eager to invest the time  
+to succeed in this role.  
 
-Any full-time commitments?
-My current IT role is flexible, with ample free time. I’m fully prepared to prioritize DreamPort’s training and make a smooth transition. I can dedicate myself without conflicts.
+  
+Can i work night hours  
+Yes, I’m comfortable working nights  
+to accommodate clients in different time zones  
+In my IT role,  
+I’ve supported off-site clients  
+to ensure 24 7 operations,  
+and I’ll do the same for DreamPort.  
 
-Can you commit 8+ hours a day, 5 days a week?
-Absolutely, I’m ready to commit 8 hours or more, 5 days a week, to DreamPort’s training. I’m eager to invest the time to succeed in this role.
 
-Can you work night hours?
-Yes, I’m comfortable working nights to accommodate clients in different time zones. In my IT role, I’ve supported off-site clients to ensure 24/7 operations, and I’ll do the same for DreamPort.
+Have i read and understood the process  
+Yes, I confirm  
+I’ve read and understood  
+the workflow, steps,  
+and timeline of DreamPort’s  
+learning process  
+I’m excited to continue.
 
-Have you read and understood the process?
-Yes, I confirm I’ve read and understood the workflow, steps, and timeline of DreamPort’s learning process. I’m excited to continue.
+So now i'm going to read the script as follows:
 
-Thank you for considering me! I look forward to joining DreamPort as an Independent Travel Manager.`;
+"That’s a great question, John, Let me tell you more about our company and what we do, 
+You see, we have been in business for more than 20 years and annually we are arranging over 
+200 thousand flights to our customers both in Economy and Business classes, On top of that we are:
+
+1 Members of the Better Business Bureau with A plus, The highest rating,
+2 Accredited by Airline Reporting Corporation and American Society of Travel agents,
+Moreover, you can check customer reviews at asapticketsreviews,com, There will be links to Trustpilot, 
+Google & Facebook reviews, and more,
+
+On top of that, we always can provide you with the airline confirmation number of your 
+reservation before you pay for tickets, You can check at the airline’s official website or 
+you can call them to check if everything is in order."`;
     </script>
 </body>
 </html>
