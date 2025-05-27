@@ -12,7 +12,7 @@ function startTeleprompter() {
 
     const script = document.getElementById('script-input').value.trim();
     const speedMode = document.getElementById('speed-selector').value;
-    let duration = parseInt(document.getElementById('duration-input').value) * 1000;
+    let duration = parseInt(document.getElementById('duration-input').value) * 100;
 
     if (!script || (speedMode === 'duration' && duration <= 0)) {
         alert('Please enter a script and a valid duration (if using Duration-Based).');
@@ -49,7 +49,7 @@ function startTeleprompter() {
     updateTimerDisplay();
     timerInterval = setInterval(() => {
         if (isRunning) {
-            elapsedTime += 100;
+            elapsedTime += 10;
             updateTimerDisplay();
         }
     }, 100);
