@@ -3,348 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teleprompter with Sentence Highlighting</title>
+    <title>Teleprompter with Word Highlighting</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #fff;
             margin: 0;
             padding: 20px;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        #teleprompter {
-            width: 100%;
-            max-width: 800px;
-            height: 200px;
-            overflow: hidden;
-            padding: 20px;
-            font-size: 24px;
-            line-height: 1.5;
-            border: 1px solid;
-            white-space: pre-wrap;
-            position: fixed;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-        }
-        body.fullscreen #teleprompter {
-            max-width: 100%;
-            width: 100%;
-            height: 100vh;
-            padding: 40px;
-            top: 0;
-            left: 0;
-            transform: none;
-            display: flex;
-            flex-direction: column;
             align-items: center;
+            min-height: 100vh;
         }
         #input-section {
             width: 100%;
             max-width: 600px;
-            margin-top: 240px;
             margin-bottom: 20px;
-            align-self: center;
-        }
-        body.fullscreen #input-section {
-            display: none;
         }
         #script-input {
             width: 100%;
             height: 150px;
             padding: 10px;
             font-size: 16px;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #555;
             resize: vertical;
-            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
         }
-        #duration-input, #speed-selector {
+        #duration-input {
             width: 100px;
             padding: 5px;
             font-size: 16px;
-            margin: 10px 5px;
-            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+            margin: 10px 0;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #555;
         }
         #controls {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
-            flex-wrap: wrap;
         }
         button {
             padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
             border: none;
             border-radius: 5px;
-            transition: background-color 0.3s, color 0.3s;
         }
         button:hover {
-            filter: brightness(90%);
+            background-color: #45a049;
         }
-        #text-size, #theme-selector {
+        #text-size {
             padding: 5px;
             font-size: 16px;
-            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #555;
         }
-        #timer {
-            font-size: 18px;
-            margin-top: 10px;
-            text-align: center;
+        #teleprompter {
+            width: 100%;
+            max-width: 800px;
+            height: 400px;
+            overflow-y: auto;
+            background-color: #111;
+            padding: 20px;
+            font-size: 24px;
+            line-height: 1.5;
+            border: 1px solid #555;
+            white-space: pre-wrap;
+            position: relative;
         }
-        body.fullscreen #timer {
-            display: none;
-        }
-        .sentence {
-            transition: opacity 0.3s;
-            display: block;
-            margin-bottom: 10px;
-            opacity: 0.3;
-            text-align: center;
+        .word {
+            transition: background-color 0.3s;
         }
         .highlight {
-            opacity: 1;
-            transition: background-color 0.3s, color 0.3s;
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-        }
-        #exit-fullscreen {
-            display: none;
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 8px 16px;
-            font-size: 14px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            z-index: 1001;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        body.fullscreen #exit-fullscreen {
-            display: block;
-        }
-        /* Theme 1: Dark */
-        body.theme-dark {
-            background-color: #222;
+            background-color: #4CAF50;
             color: #fff;
         }
-        body.theme-dark #teleprompter { background-color: #111; border-color: #555; }
-        body.theme-dark #script-input, body.theme-dark #duration-input, body.theme-dark #text-size, body.theme-dark #theme-selector, body.theme-dark #speed-selector { background-color: #333; color: #fff; border: 1px solid #555; }
-        body.theme-dark button, body.theme-dark #exit-fullscreen { background-color: #4CAF50; color: white; }
-        body.theme-dark .highlight { background-color: #4CAF50; color: #fff; }
-        body.theme-dark #timer { color: #fff; }
-        /* Theme 2: Light */
-        body.theme-light {
-            background-color: #f5f5f5;
-            color: #333;
+        #teleprompter::-webkit-scrollbar {
+            width: 8px;
         }
-        body.theme-light #teleprompter { background-color: #fff; border-color: #ccc; }
-        body.theme-light #script-input, body.theme-light #duration-input, body.theme-light #text-size, body.theme-light #theme-selector, body.theme-light #speed-selector { background-color: #fff; color: #333; border: 1px solid #ccc; }
-        body.theme-light button, body.theme-light #exit-fullscreen { background-color: #007BFF; color: white; }
-        body.theme-light .highlight { background-color: #007BFF; color: #fff; }
-        body.theme-light #timer { color: #333; }
-        /* Theme 3: Vibrant */
-        body.theme-vibrant {
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            color: #fff;
+        #teleprompter::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
         }
-        body.theme-vibrant #teleprompter { background-color: #1a1a1a; border-color: #ff9500; }
-        body.theme-vibrant #script-input, body.theme-vibrant #duration-input, body.theme-vibrant #text-size, body.theme-vibrant #theme-selector, body.theme-vibrant #speed-selector { background-color: #2a2a2a; color: #fff; border: 1px solid #ff9500; }
-        body.theme-vibrant button, body.theme-vibrant #exit-fullscreen { background-color: #ff9500; color: #fff; }
-        body.theme-vibrant .highlight { background-color: #ff9500; color: #fff; }
-        body.theme-vibrant #timer { color: #fff; }
-        /* Theme 4: Neon */
-        body.theme-neon {
-            background: linear-gradient(135deg, #0f2027, #203a43);
-            color: #fff;
-        }
-        body.theme-neon #teleprompter { background-color: #000; border-color: #00ffcc; }
-        body.theme-neon #script-input, body.theme-neon #duration-input, body.theme-neon #text-size, body.theme-neon #theme-selector, body.theme-neon #speed-selector { background-color: #1c2526; color: #fff; border: 1px solid #00ffcc; }
-        body.theme-neon button, body.theme-neon #exit-fullscreen { background-color: #00ffcc; color: #000; }
-        body.theme-neon .highlight { background-color: #ff00ff; color: #fff; }
-        body.theme-neon #timer { color: #00ffcc; }
-        /* Theme 5: Pastel */
-        body.theme-pastel {
-            background: linear-gradient(135deg, #f4e4e4, #e8ecef);
-            color: #333;
-        }
-        body.theme-pastel #teleprompter { background-color: #fff; border-color: #ffb6c1; }
-        body.theme-pastel #script-input, body.theme-pastel #duration-input, body.theme-pastel #text-size, body.theme-pastel #theme-selector, body.theme-pastel #speed-selector { background-color: #fff; color: #333; border: 1px solid #ffb6c1; }
-        body.theme-pastel button, body.theme-pastel #exit-fullscreen { background-color: #ffb6c1; color: #333; }
-        body.theme-pastel .highlight { background-color: #98fb98; color: #333; }
-        body.theme-pastel #timer { color: #333; }
-        /* Theme 6: Midnight */
-        body.theme-midnight {
-            background: linear-gradient(135deg, #191970, #2f4f4f);
-            color: #fff;
-        }
-        body.theme-midnight #teleprompter { background-color: #0c0c1c; border-color: #4682b4; }
-        body.theme-midnight #script-input, body.theme-midnight #duration-input, body.theme-midnight #text-size, body.theme-midnight #theme-selector, body.theme-midnight #speed-selector { background-color: #1c2526; color: #fff; border: 1px solid #4682b4; }
-        body.theme-midnight button, body.theme-midnight #exit-fullscreen { background-color: #4682b4; color: #fff; }
-        body.theme-midnight .highlight { background-color: #6a5acd; color: #fff; }
-        body.theme-midnight #timer { color: #fff; }
-        /* Theme 7: Sunset */
-        body.theme-sunset {
-            background: linear-gradient(135deg, #ff4500, #ff8c00);
-            color: #fff;
-        }
-        body.theme-sunset #teleprompter { background-color: #2c1e1e; border-color: #ffd700; }
-        body.theme-sunset #script-input, body.theme-sunset #duration-input, body.theme-sunset #text-size, body.theme-sunset #theme-selector, body.theme-sunset #speed-selector { background-color: #3c2f2f; color: #fff; border: 1px solid #ffd700; }
-        body.theme-sunset button, body.theme-sunset #exit-fullscreen { background-color: #ffd700; color: #333; }
-        body.theme-sunset .highlight { background-color: #ff6347; color: #fff; }
-        body.theme-sunset #timer { color: #fff; }
-        /* Theme 8: Ocean */
-        body.theme-ocean {
-            background: linear-gradient(135deg, #006994, #00CED1);
-            color: #fff;
-        }
-        body.theme-ocean #teleprompter { background-color: #003366; border-color: #40E0D0; }
-        body.theme-ocean #script-input, body.theme-ocean #duration-input, body.theme-ocean #text-size, body.theme-ocean #theme-selector, body.theme-ocean #speed-selector { background-color: #004466; color: #fff; border: 1px solid #40E0D0; }
-        body.theme-ocean button, body.theme-ocean #exit-fullscreen { background-color: #40E0D0; color: #333; }
-        body.theme-ocean .highlight { background-color: #00B7EB; color: #fff; }
-        body.theme-ocean #timer { color: #fff; }
-        /* Theme 9: Forest */
-        body.theme-forest {
-            background: linear-gradient(135deg, #228B22, #556B2F);
-            color: #fff;
-        }
-        body.theme-forest #teleprompter { background-color: #1a3c1a; border-color: #8FBC8F; }
-        body.theme-forest #script-input, body.theme-forest #duration-input, body.theme-forest #text-size, body.theme-forest #theme-selector, body.theme-forest #speed-selector { background-color: #2a4c2a; color: #fff; border: 1px solid #8FBC8F; }
-        body.theme-forest button, body.theme-forest #exit-fullscreen { background-color: #8FBC8F; color: #333; }
-        body.theme-forest .highlight { background-color: #32CD32; color: #fff; }
-        body.theme-forest #timer { color: #fff; }
-        /* Theme 10: Retro */
-        body.theme-retro {
-            background: linear-gradient(135deg, #C71585, #FF69B4);
-            color: #fff;
-        }
-        body.theme-retro #teleprompter { background-color: #4B0082; border-color: #FF1493; }
-        body.theme-retro #script-input, body.theme-retro #duration-input, body.theme-retro #text-size, body.theme-retro #theme-selector, body.theme-retro #speed-selector { background-color: #6A0DAD; color: #fff; border: 1px solid #FF1493; }
-        body.theme-retro button, body.theme-retro #exit-fullscreen { background-color: #FF1493; color: #fff; }
-        body.theme-retro .highlight { background-color: #FF69B4; color: #fff; }
-        body.theme-retro #timer { color: #fff; }
-        /* Theme 11: Cosmic */
-        body.theme-cosmic {
-            background: linear-gradient(135deg, #2c003e, #4b0082);
-            color: #fff;
-        }
-        body.theme-cosmic #teleprompter { background-color: #1c0030; border-color: #ba55d3; }
-        body.theme-cosmic #script-input, body.theme-cosmic #duration-input, body.theme-cosmic #text-size, body.theme-cosmic #theme-selector, body.theme-cosmic #speed-selector { background-color: #3c0060; color: #fff; border: 1px solid #ba55d3; }
-        body.theme-cosmic button, body.theme-cosmic #exit-fullscreen { background-color: #ba55d3; color: #fff; }
-        body.theme-cosmic .highlight { background-color: #9932cc; color: #fff; }
-        body.theme-cosmic #timer { color: #fff; }
-        /* Theme 12: Aurora */
-        body.theme-aurora {
-            background: linear-gradient(135deg, #004d40, #26a69a);
-            color: #fff;
-        }
-        body.theme-aurora #teleprompter { background-color: #00251a; border-color: #4db6ac; }
-        body.theme-aurora #script-input, body.theme-aurora #duration-input, body.theme-aurora #text-size, body.theme-aurora #theme-selector, body.theme-aurora #speed-selector { background-color: #00332a; color: #fff; border: 1px solid #4db6ac; }
-        body.theme-aurora button, body.theme-aurora #exit-fullscreen { background-color: #4db6ac; color: #fff; }
-        body.theme-aurora .highlight { background-color: #26a69a; color: #fff; }
-        body.theme-aurora #timer { color: #fff; }
-        /* Theme 13: Velvet */
-        body.theme-velvet {
-            background: linear-gradient(135deg, #4b0082, #800080);
-            color: #fff;
-        }
-        body.theme-velvet #teleprompter { background-color: #2e004f; border-color: #da70d6; }
-        body.theme-velvet #script-input, body.theme-velvet #duration-input, body.theme-velvet #text-size, body.theme-velvet #theme-selector, body.theme-velvet #speed-selector { background-color: #3e0066; color: #fff; border: 1px solid #da70d6; }
-        body.theme-velvet button, body.theme-velvet #exit-fullscreen { background-color: #da70d6; color: #fff; }
-        body.theme-velvet .highlight { background-color: #c71585; color: #fff; }
-        body.theme-velvet #timer { color: #fff; }
-        /* Theme 14: Pop */
-        body.theme-pop {
-            background: linear-gradient(135deg, #ff4d4d, #ff9999);
-            color: #fff;
-        }
-        body.theme-pop #teleprompter { background-color: #330000; border-color: #ff6666; }
-        body.theme-pop #script-input, body.theme-pop #duration-input, body.theme-pop #text-size, body.theme-pop #theme-selector, body.theme-pop #speed-selector { background-color: #4c0000; color: #fff; border: 1px solid #ff6666; }
-        body.theme-pop button, body.theme-pop #exit-fullscreen { background-color: #ff6666; color: #fff; }
-        body.theme-pop .highlight { background-color: #ff3333; color: #fff; }
-        body.theme-pop #timer { color: #fff; }
-        /* Theme 15: Urban */
-        body.theme-urban {
-            background: linear-gradient(135deg, #36454f, #607d8b);
-            color: #fff;
-        }
-        body.theme-urban #teleprompter { background-color: #1c2526; border-color: #78909c; }
-        body.theme-urban #script-input, body.theme-urban #duration-input, body.theme-urban #text-size, body.theme-urban #theme-selector, body.theme-urban #speed-selector { background-color: #2c3539; color: #fff; border: 1px solid #78909c; }
-        body.theme-urban button, body.theme-urban #exit-fullscreen { background-color: #78909c; color: #fff; }
-        body.theme-urban .highlight { background-color: #455a64; color: #fff; }
-        body.theme-urban #timer { color: #fff; }
-        /* Theme 16: Twilight */
-        body.theme-twilight {
-            background: linear-gradient(135deg, #483d8b, #6a5acd);
-            color: #fff;
-        }
-        body.theme-twilight #teleprompter { background-color: #2f2f4f; border-color: #9370db; }
-        body.theme-twilight #script-input, body.theme-twilight #duration-input, body.theme-twilight #text-size, body.theme-twilight #theme-selector, body.theme-twilight #speed-selector { background-color: #3f3f6f; color: #fff; border: 1px solid #9370db; }
-        body.theme-twilight button, body.theme-twilight #exit-fullscreen { background-color: #9370db; color: #fff; }
-        body.theme-twilight .highlight { background-color: #7b68ee; color: #fff; }
-        body.theme-twilight #timer { color: #fff; }
-        /* Theme 17: Coral */
-        body.theme-coral {
-            background: linear-gradient(135deg, #ff7f50, #f08080);
-            color: #fff;
-        }
-        body.theme-coral #teleprompter { background-color: #3c1f1f; border-color: #ff4040; }
-        body.theme-coral #script-input, body.theme-coral #duration-input, body.theme-coral #text-size, body.theme-coral #theme-selector, body.theme-coral #speed-selector { background-color: #4c2f2f; color: #fff; border: 1px solid #ff4040; }
-        body.theme-coral button, body.theme-coral #exit-fullscreen { background-color: #ff4040; color: #fff; }
-        body.theme-coral .highlight { background-color: #ff6a6a; color: #fff; }
-        body.theme-coral #timer { color: #fff; }
-        /* Theme 18: Galaxy */
-        body.theme-galaxy {
-            background: linear-gradient(135deg, #000080, #191970);
-            color: #fff;
-        }
-        body.theme-galaxy #teleprompter { background-color: #00003f; border-color: #4169e1; }
-        body.theme-galaxy #script-input, body.theme-galaxy #duration-input, body.theme-galaxy #text-size, body.theme-galaxy #theme-selector, body.theme-galaxy #speed-selector { background-color: #00006f; color: #fff; border: 1px solid #4169e1; }
-        body.theme-galaxy button, body.theme-galaxy #exit-fullscreen { background-color: #4169e1; color: #fff; }
-        body.theme-galaxy .highlight { background-color: #1e90ff; color: #fff; }
-        body.theme-galaxy #timer { color: #fff; }
-        /* Theme 19: Mint */
-        body.theme-mint {
-            background: linear-gradient(135deg, #20b2aa, #48d1cc);
-            color: #fff;
-        }
-        body.theme-mint #teleprompter { background-color: #104040; border-color: #7fffd4; }
-        body.theme-mint #script-input, body.theme-mint #duration-input, body.theme-mint #text-size, body.theme-mint #theme-selector, body.theme-mint #speed-selector { background-color: #205050; color: #fff; border: 1px solid #7fffd4; }
-        body.theme-mint button, body.theme-mint #exit-fullscreen { background-color: #7fffd4; color: #333; }
-        body.theme-mint .highlight { background-color: #40e0d0; color: #fff; }
-        body.theme-mint #timer { color: #fff; }
-        /* Theme 20: Disco */
-        body.theme-disco {
-            background: linear-gradient(135deg, #ff00ff, #00ffff);
-            color: #fff;
-        }
-        body.theme-disco #teleprompter { background-color: #1f001f; border-color: #00ff00; }
-        body.theme-disco #script-input, body.theme-disco #duration-input, body.theme-disco #text-size, body.theme-disco #theme-selector, body.theme-disco #speed-selector { background-color: #2f002f; color: #fff; border: 1px solid #00ff00; }
-        body.theme-disco button, body.theme-disco #exit-fullscreen { background-color: #00ff00; color: #333; }
-        body.theme-disco .highlight { background-color: #ff00ff; color: #fff; }
-        body.theme-disco #timer { color: #fff; }
     </style>
 </head>
-<body class="theme-dark">
-    <div id="teleprompter"></div>
-    <button id="exit-fullscreen" onclick="exitFullscreen()">Exit Full Screen</button>
+<body>
     <div id="input-section">
         <textarea id="script-input" placeholder="Paste your script here..."></textarea>
+        <input type="number" id="duration-input" placeholder="Duration (seconds)" min="1" value="270">
         <div id="controls">
-            <input type="number" id="duration-input" placeholder="Duration (seconds)" min="1" value="270">
-            <select id="speed-selector" onchange="updateSpeedMode()">
-                <option value="duration" selected>Duration-Based</option>
-                <option value="slow">Slow (120 WPM)</option>
-                <option value="normal">Normal (140 WPM)</option>
-                <option value="fast">Fast (160 WPM)</option>
-            </select>
             <button onclick="startTeleprompter()">Start</button>
             <button onclick="pauseTeleprompter()">Pause</button>
             <button onclick="toggleFullScreen()">Full Screen</button>
@@ -354,126 +107,78 @@
                 <option value="28">Large</option>
                 <option value="32">Extra Large</option>
             </select>
-            <select id="theme-selector" onchange="changeTheme()">
-                <option value="theme-dark" selected>Dark</option>
-                <option value="theme-light">Light</option>
-                <option value="theme-vibrant">Vibrant</option>
-                <option value="theme-neon">Neon</option>
-                <option value="theme-pastel">Pastel</option>
-                <option value="theme-midnight">Midnight</option>
-                <option value="theme-sunset">Sunset</option>
-                <option value="theme-ocean">Ocean</option>
-                <option value="theme-forest">Forest</option>
-                <option value="theme-retro">Retro</option>
-                <option value="theme-cosmic">Cosmic</option>
-                <option value="theme-aurora">Aurora</option>
-                <option value="theme-velvet">Velvet</option>
-                <option value="theme-pop">Pop</option>
-                <option value="theme-urban">Urban</option>
-                <option value="theme-twilight">Twilight</option>
-                <option value="theme-coral">Coral</option>
-                <option value="theme-galaxy">Galaxy</option>
-                <option value="theme-mint">Mint</option>
-                <option value="theme-disco">Disco</option>
-            </select>
         </div>
-        <div id="timer">00:00</div>
     </div>
+    <div id="teleprompter"></div>
 
     <script>
         let isRunning = false;
         let intervalId = null;
-        let currentSentenceIndex = 0;
-        let sentences = [];
-        let sentenceDuration = 0;
-        let timerInterval = null;
-        let elapsedTime = 0;
+        let currentWordIndex = 0;
+        let words = [];
+        let wordDuration = 0;
 
         function startTeleprompter() {
             if (isRunning) return;
             isRunning = true;
 
             const script = document.getElementById('script-input').value.trim();
-            const speedMode = document.getElementById('speed-selector').value;
-            let duration = parseInt(document.getElementById('duration-input').value) * 1000; // Convert to ms
-
-            if (!script || (speedMode === 'duration' && duration <= 0)) {
-                alert('Please enter a script and a valid duration (if using Duration-Based mode).');
+            const duration = parseInt(document.getElementById('duration-input').value) * 1000; // Convert to ms
+            if (!script || duration <= 0) {
+                alert('Please enter a script and a valid duration.');
                 isRunning = false;
                 return;
             }
 
-            // Split script into sentences, preserving action instructions
-            sentences = script.split(/(\[PAUSE\]|\[PAUSE, SMILE\]|\[PAUSE, TRANSITION\]|\.)/).filter(s => s.trim().length > 0);
-            sentences = sentences.map(s => s.trim()).filter(s => s.length > 0);
-            if (sentences.length === 0) {
-                alert('No valid sentences found in the script.');
+            // Split script into words
+            words = script.split(/\s+/).filter(word => word.length > 0);
+            if (words.length === 0) {
+                alert('No valid words found in the script.');
                 isRunning = false;
                 return;
             }
 
-            // Calculate duration per sentence
-            if (speedMode !== 'duration') {
-                const wordCount = script.split(/\s+/).filter(w => w.length > 0).length;
-                const wpm = speedMode === 'slow' ? 120 : speedMode === 'normal' ? 140 : 160;
-                duration = (wordCount / wpm) * 60 * 1000; // Total duration in ms
-            }
-            sentenceDuration = duration / sentences.length;
+            // Calculate duration per word (in ms)
+            wordDuration = duration / words.length;
 
-            // Display sentences in teleprompter
+            // Display words in teleprompter
             const teleprompter = document.getElementById('teleprompter');
-            teleprompter.innerHTML = sentences.map((sentence, index) => 
-                `<span class="sentence" id="sentence-${index}">${sentence}${sentence.startsWith('[') ? '' : '.'}</span>`
+            teleprompter.innerHTML = words.map((word, index) => 
+                `<span class="word" id="word-${index}">${word}</span>`
             ).join(' ');
 
             // Reset scroll and index
-            currentSentenceIndex = 0;
+            currentWordIndex = 0;
             teleprompter.scrollTop = 0;
-
-            // Reset and start timer
-            elapsedTime = 0;
-            updateTimerDisplay();
-            timerInterval = setInterval(() => {
-                if (isRunning) {
-                    elapsedTime += 100;
-                    updateTimerDisplay();
-                }
-            }, 100);
 
             // Start scrolling and highlighting
             intervalId = setInterval(() => {
-                if (currentSentenceIndex >= sentences.length) {
+                if (currentWordIndex >= words.length) {
                     pauseTeleprompter();
                     return;
                 }
 
-                // Highlight current sentence
-                const currentSentence = document.getElementById(`sentence-${currentSentenceIndex}`);
-                if (currentSentence) {
-                    document.querySelectorAll('.sentence').forEach(s => s.classList.remove('highlight'));
-                    currentSentence.classList.add('highlight');
+                // Highlight current word
+                const currentWord = document.getElementById(`word-${currentWordIndex}`);
+                if (currentWord) {
+                    document.querySelectorAll('.word').forEach(word => word.classList.remove('highlight'));
+                    currentWord.classList.add('highlight');
 
-                    // Scroll to keep highlighted sentence at the top
-                    if (!document.fullscreenElement) {
-                        teleprompter.scrollTo({ top: currentSentence.offsetTop - teleprompter.offsetTop - 10, behavior: 'smooth' });
-                    }
+                    // Scroll to keep highlighted word in view (center of teleprompter)
+                    const wordRect = currentWord.getBoundingClientRect();
+                    const teleprompterRect = teleprompter.getBoundingClientRect();
+                    const scrollOffset = wordRect.top - teleprompterRect.top - teleprompter.clientHeight / 2 + wordRect.height / 2;
+                    teleprompter.scrollBy({ top: scrollOffset, behavior: 'smooth' });
                 }
 
-                currentSentenceIndex++;
-            }, sentenceDuration);
+                currentWordIndex++;
+            }, wordDuration);
         }
 
         function pauseTeleprompter() {
             if (!isRunning) return;
             isRunning = false;
             clearInterval(intervalId);
-            clearInterval(timerInterval);
-        }
-
-        function updateTimerDisplay() {
-            const minutes = Math.floor(elapsedTime / 60000);
-            const seconds = Math.floor((elapsedTime % 60000) / 1000);
-            document.getElementById('timer').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
 
         function changeTextSize() {
@@ -481,60 +186,51 @@
             document.getElementById('teleprompter').style.fontSize = `${size}px`;
         }
 
-        function changeTheme() {
-            const theme = document.getElementById('theme-selector').value;
-            document.body.className = theme + (document.fullscreenElement ? ' fullscreen' : '');
-        }
-
-        function updateSpeedMode() {
-            const speedMode = document.getElementById('speed-selector').value;
-            document.getElementById('duration-input').disabled = speedMode !== 'duration';
-        }
-
         function toggleFullScreen() {
+            const elem = document.documentElement;
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().then(() => {
-                    document.body.classList.add('fullscreen');
-                    changeTheme(); // Reapply theme to update exit button
-                }).catch(err => {
+                elem.requestFullscreen().catch(err => {
                     console.error(`Error enabling fullscreen: ${err.message}`);
                 });
+            } else {
+                document.exitFullscreen();
             }
         }
 
-        function exitFullscreen() {
-            if (document.fullscreenElement) {
-                document.exitFullscreen().then(() => {
-                    document.body.classList.remove('fullscreen');
-                    changeTheme(); // Reapply theme
-                });
-            }
-        }
+        // Initialize with default script (your provided script)
+        document.getElementById('script-input').value = `Hi, my name is Dagim Faji Dandena, and I’m from Addis Ababa, Ethiopia. I live in Adama, just a 30-minute drive from the capital. I’m thrilled to share why I’d be a great Independent Travel Manager with DreamPort.
 
-        // Initialize with default script
-        document.getElementById('script-input').value = `Hi, my name is Dagim Faji Dandena, and I’m from Addis Ababa, Ethiopia. I live in Adama, just a 30-minute drive from the capital. I’m thrilled to share why I’d be a great Independent Travel Manager with DreamPort. [PAUSE, SMILE]
+Work Experience
+For over four years, I worked in catering in Addis Ababa, serving clients at weddings, funerals, and birthdays. This sharpened my customer service and communication skills, tailoring services to diverse needs.
 
-Work Experience. For over four years, I worked in catering in Addis Ababa, serving clients at weddings, funerals, and birthdays. This sharpened my customer service and communication skills, tailoring services to diverse needs. [PAUSE]
+Now, I’m a Deputy IT Supervisor at a textile company in Adama. I support over 40 users, troubleshooting hardware and software, managing helpdesk systems, and collaborating across departments to ensure reliable operations. These roles built my problem-solving and interpersonal skills, perfect for travel management.
 
-Now, I’m a Deputy IT Supervisor at a textile company in Adama. I support over 40 users, troubleshooting hardware and software, managing helpdesk systems, and collaborating across departments to ensure reliable operations. These roles built my problem-solving and interpersonal skills, perfect for travel management. [PAUSE]
+Education
+I hold a Bachelor’s Degree in Computer Science from Hawassa University, Ethiopia. This gave me a strong foundation in system management and technical problem-solving, which I’ve built on professionally.
 
-Education. I hold a Bachelor’s Degree in Computer Science from Hawassa University, Ethiopia. This gave me a strong foundation in system management and technical problem-solving, which I’ve built on professionally. [PAUSE, TRANSITION]
+Why an Independent Travel Manager?
+I love travel—exploring new places, cultures, and people inspires me. This role lets me combine my passion for travel with my knack for connecting with people and delivering tailored solutions. It’s a chance to grow professionally and create memorable experiences for clients.
 
-Why an Independent Travel Manager? I love travel—exploring new places, cultures, and people inspires me. This role lets me combine my passion for travel with my knack for connecting with people and delivering tailored solutions. It’s a chance to grow professionally and create memorable experiences for clients. [PAUSE]
+Experience in Sales or Customer Service?
+Yes, my catering work involved direct customer service, meeting clients’ unique needs for events. In my IT role, I resolve issues for 40+ users with a 95% first-contact resolution rate, explaining solutions clearly. These skills will help me assist travel clients effectively.
 
-Experience in Sales or Customer Service? Yes, my catering work involved direct customer service, meeting clients’ unique needs for events. In my IT role, I resolve issues for 40+ users with a 95% first-contact resolution rate, explaining solutions clearly. These skills will help me assist travel clients effectively. [PAUSE]
+Key Professional Strengths?
+My strengths are problem-solving, communication, and adaptability. I’ve tackled complex IT issues, reducing downtime by 30%. I explain technical concepts to non-technical users, which will help me present travel options clearly. I’m adaptable, quickly learning new systems, and eager to master DreamPort’s tools.
 
-Key Professional Strengths? My strengths are problem-solving, communication, and adaptability. I’ve tackled complex IT issues, reducing downtime by 30%. I explain technical concepts to non-technical users, which will help me present travel options clearly. I’m adaptable, quickly learning new systems, and eager to master DreamPort’s tools. [PAUSE]
+How will this job help achieve your goals?
+This role aligns with my love for travel and impacting clients’ lives. It lets me build relationships, create unforgettable travel experiences, and develop sales and customer service skills. The flexibility allows me to take ownership of my career and grow personally and professionally.
 
-How will this job help achieve your goals? This role aligns with my love for travel and impacting clients’ lives. It lets me build relationships, create unforgettable travel experiences, and develop sales and customer service skills. The flexibility allows me to take ownership of my career and grow personally and professionally. [PAUSE]
+Any full-time commitments?
+My current IT role is flexible, with ample free time. I’m fully prepared to prioritize DreamPort’s training and make a smooth transition. I can dedicate myself without conflicts.
 
-Any full-time commitments? My current IT role is flexible, with ample free time. I’m fully prepared to prioritize DreamPort’s training and make a smooth transition. I can dedicate myself without conflicts. [PAUSE]
+Can you commit 8+ hours a day, 5 days a week?
+Absolutely, I’m ready to commit 8 hours or more, 5 days a week, to DreamPort’s training. I’m eager to invest the time to succeed in this role.
 
-Can you commit 8+ hours a day, 5 days a week? Absolutely, I’m ready to commit 8 hours or more, 5 days a week, to DreamPort’s training. I’m eager to invest the time to succeed in this role. [PAUSE]
+Can you work night hours?
+Yes, I’m comfortable working nights to accommodate clients in different time zones. In my IT role, I’ve supported off-site clients to ensure 24/7 operations, and I’ll do the same for DreamPort.
 
-Can you work night hours? Yes, I’m comfortable working nights to accommodate clients in different time zones. In my IT role, I’ve supported off-site clients to ensure 24/7 operations, and I’ll do the same for DreamPort. [PAUSE]
-
-Have you read and understood the process? Yes, I confirm I’ve read and understood the workflow, steps, and timeline of DreamPort’s learning process. I’m excited to continue. [PAUSE, SMILE]
+Have you read and understood the process?
+Yes, I confirm I’ve read and understood the workflow, steps, and timeline of DreamPort’s learning process. I’m excited to continue.
 
 Thank you for considering me! I look forward to joining DreamPort as an Independent Travel Manager.`;
     </script>
