@@ -415,7 +415,7 @@
             if (speedMode !== 'duration') {
                 const wordCount = script.split(/\s+/).filter(w => w.length > 0).length;
                 const wpm = speedMode === 'slow' ? 120 : speedMode === 'normal' ? 140 : 160;
-                duration = (wordCount / wpm) * 60 * 1000; // Total duration in ms
+                duration = (wordCount / wpm) * 60 * 10; // Total duration in ms
             }
             sentenceDuration = duration / sentences.length;
 
