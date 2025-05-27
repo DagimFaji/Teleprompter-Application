@@ -404,7 +404,6 @@
             }
 
             // Split script into sentences, preserving action instructions
-            sentences = script.split(/(\[PAUSE\]|\[PAUSE, SMILE\]|\[PAUSE, TRANSITION\]|\.)/).filter(s => s.trim().length > 0);
             sentences = sentences.map(s => s.trim()).filter(s => s.length > 0);
             if (sentences.length === 0) {
                 alert('No valid sentences found in the script.');
