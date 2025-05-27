@@ -16,10 +16,23 @@
             align-items: center;
             min-height: 100vh;
         }
+        #teleprompter {
+            width: 100%;
+            max-width: 800px;
+            height: 400px;
+            overflow-y: auto;
+            background-color: #111;
+            padding: 20px;
+            font-size: 24px;
+            line-height: 1.5;
+            border: 1px solid #555;
+            white-space: pre-wrap;
+            position: relative;
+            margin-bottom: 20px; /* Added spacing below teleprompter */
+        }
         #input-section {
             width: 100%;
             max-width: 600px;
-            margin-bottom: 20px;
         }
         #script-input {
             width: 100%;
@@ -64,19 +77,6 @@
             color: #fff;
             border: 1px solid #555;
         }
-        #teleprompter {
-            width: 100%;
-            max-width: 800px;
-            height: 400px;
-            overflow-y: auto;
-            background-color: #111;
-            padding: 20px;
-            font-size: 24px;
-            line-height: 1.5;
-            border: 1px solid #555;
-            white-space: pre-wrap;
-            position: relative;
-        }
         .word {
             transition: background-color 0.3s;
         }
@@ -94,6 +94,7 @@
     </style>
 </head>
 <body>
+    <div id="teleprompter"></div>
     <div id="input-section">
         <textarea id="script-input" placeholder="Paste your script here..."></textarea>
         <input type="number" id="duration-input" placeholder="Duration (seconds)" min="1" value="270">
@@ -109,7 +110,6 @@
             </select>
         </div>
     </div>
-    <div id="teleprompter"></div>
 
     <script>
         let isRunning = false;
@@ -197,7 +197,7 @@
             }
         }
 
-        // Initialize with default script (your provided script)
+        // Initialize with default script
         document.getElementById('script-input').value = `Hi, my name is Dagim Faji Dandena, and I’m from Addis Ababa, Ethiopia. I live in Adama, just a 30-minute drive from the capital. I’m thrilled to share why I’d be a great Independent Travel Manager with DreamPort.
 
 Work Experience
