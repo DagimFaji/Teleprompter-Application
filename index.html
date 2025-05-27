@@ -3,62 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teleprompter App</title>
+    <title>Teleprompter - Welcome</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="theme-aurorawave">
+<body class="theme-dark">
     <div class="welcome-container">
-        <h1>Welcome to the Teleprompter</h1>
-        <p>Enter your script below to get started.</p>
+        <h1>Welcome to Your Teleprompter</h1>
+        <p>Paste your script below or select a sample prompt to get started.</p>
+        <textarea id="script-input" placeholder="Paste your script here..."></textarea>
         <div class="sample-prompts">
-            <label for="sample-selector">Sample Prompts:</label>
-            <select id="sample-selector">
-                <option value="">Select a sample</option>
-                <option value="Welcome to my presentation. Today, we will explore new ideas. [PAUSE] Let's begin!">Sample Presentation</option>
-                <option value="Hello everyone! [PAUSE, SMILE] This is a test script. [PAUSE-TRANSITION] Moving on...">Sample Test</option>
+            <label for="sample-selector">Try a Sample Prompt:</label>
+            <select id="sample-selector" onchange="loadSamplePrompt()">
+                <option value="">Select a sample...</option>
+                <option value="news">News Broadcast</option>
+                <option value="presentation">Presentation</option>
+                <option value="keynote">Keynote Speech</option>
+                <option value="pitch">Product Pitch</option>
+                <option value="interview">Interview</option>
             </select>
         </div>
-        <textarea id="script-input" placeholder="Enter your script here..."></textarea>
-        <div class="controls">
-            <input type="number" id="duration-input" value="270" min="1">
-            <button id="start-button" class="win11-button">Start Prompter</button>
-            <select id="theme-selector">
-                <option value="auto">Auto</option>
-                <option value="theme-dark">Dark</option>
-                <option value="theme-light">Light</option>
-                <option value="theme-vibrant">Vibrant</option>
-                <option value="theme-neon">Neon</option>
-                <option value="theme-pastel">Pastel</option>
-                <option value="theme-midnight">Midnight</option>
-                <option value="theme-sunset">Sunset</option>
-                <option value="theme-ocean">Ocean</option>
-                <option value="theme-forest">Forest</option>
-                <option value="theme-retro">Retro</option>
-                <option value="theme-cosmic">Cosmic</option>
-                <option value="theme-aurora" selected>Aurora Wave</option>
-                <option value="theme-velvet">Velvet</option>
-                <option value="theme-pop">Pop</option>
-                <option value="theme-urban">Urban</option>
-                <option value="theme-twilight">Twilight</option>
-                <option value="theme-coral">Coral</option>
-                <option value="theme-galaxy">Galaxy</option>
-                <option value="theme-mint">Mint</option>
-                <option value="theme-disco">Disco</option>
-                <option value="theme-starfield">Starfield</option>
-                <option value="theme-prism">Prism</option>
-                <option value="theme-firefly">Firefly</option>
-                <option value="theme-nebula">Nebula</option>
-                <option value="theme-pulse">Pulse</option>
-                <option value="theme-hologram">Hologram</option>
-                <option value="theme-radiance">Radiance</option>
-                <option value="theme-vortex">Vortex</option>
-                <option value="theme-spectrum">Spectrum</option>
-            </select>
-        </div>
-    </div>
-    <div id="warning-box" class="warning-box">
-        <span id="warning-message"></span>
-        <button id="warning-close" class="win11-button">Close</button>
+        <button onclick="proceedToPrompter()" class="win11-button">Proceed</button>
     </div>
     <script src="script.js"></script>
 </body>
