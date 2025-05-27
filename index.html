@@ -123,7 +123,7 @@
             isRunning = true;
 
             const script = document.getElementById('script-input').value.trim();
-            const duration = parseInt(document.getElementById('duration-input').value) * 100; // Convert to ms
+            const duration = parseInt(document.getElementById('duration-input').value) * 500; // Convert to ms
             if (!script || duration <= 0) {
                 alert('Please enter a script and a valid duration.');
                 isRunning = false;
