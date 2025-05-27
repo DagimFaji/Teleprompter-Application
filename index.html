@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teleprompter with Word Highlighting</title>
+    <title>Teleprompter with Sentence Highlighting</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -28,7 +28,7 @@
             border: 1px solid #555;
             white-space: pre-wrap;
             position: relative;
-            margin-bottom: 20px; /* Added spacing below teleprompter */
+            margin-bottom: 20px;
         }
         #input-section {
             width: 100%;
@@ -77,7 +77,7 @@
             color: #fff;
             border: 1px solid #555;
         }
-        .word {
+        .sentence {
             transition: background-color 0.3s;
         }
         .highlight {
@@ -114,65 +114,65 @@
     <script>
         let isRunning = false;
         let intervalId = null;
-        let currentWordIndex = 0;
-        let words = [];
-        let wordDuration = 0;
+        let currentSentenceIndex = 0;
+        let sentences = [];
+        let sentenceDuration = 0;
 
         function startTeleprompter() {
             if (isRunning) return;
             isRunning = true;
 
             const script = document.getElementById('script-input').value.trim();
-            const duration = parseInt(document.getElementById('duration-input').value) * 500; // Convert to ms
+            const duration = parseInt(document.getElementById('duration-input').value) * 1000; // Convert to ms
             if (!script || duration <= 0) {
                 alert('Please enter a script and a valid duration.');
                 isRunning = false;
                 return;
             }
 
-            // Split script into words
-            words = script.split(/\s+/).filter(word => word.length > 0);
-            if (words.length === 0) {
-                alert('No valid words found in the script.');
+            // Split script into sentences
+            sentences = script.split(/[.!?]\s+/).filter(sentence => sentence.length > 0);
+            if (sentences.length === 0) {
+                alert('No valid sentences found in the script.');
                 isRunning = false;
                 return;
             }
 
-            // Calculate duration per word (in ms)
-            wordDuration = duration / words.length;
+            // Calculate duration per sentence (in ms)
+            sentenceDuration = duration / sentences.length;
 
-            // Display words in teleprompter
+            // Display sentences in teleprompter
             const teleprompter = document.getElementById('teleprompter');
-            teleprompter.innerHTML = words.map((word, index) => 
-                `<span class="word" id="word-${index}">${word}</span>`
-            ).join(' ');
+            teleprompter.innerHTML = sentences.map((sentence, index) => 
+                `<span class="sentence" id="sentence-${index}">${sentence.trim()}</span>. `
+            ).join('');
 
             // Reset scroll and index
-            currentWordIndex = 0;
+            currentSentenceIndex = 0;
             teleprompter.scrollTop = 0;
 
             // Start scrolling and highlighting
             intervalId = setInterval(() => {
-                if (currentWordIndex >= words.length) {
+                if (currentSentenceIndex >= sentences.length) {
                     pauseTeleprompter();
                     return;
                 }
 
-                // Highlight current word
-                const currentWord = document.getElementById(`word-${currentWordIndex}`);
-                if (currentWord) {
-                    document.querySelectorAll('.word').forEach(word => word.classList.remove('highlight'));
-                    currentWord.classList.add('highlight');
+                // Highlight current sentence
+                const currentSentence = document.getElementById(`sentence-${currentSentenceIndex}`);
+                if (currentSentence) {
+                    document.querySelectorAll('.sentence').forEach(sentence => sentence.classList.remove('highlight'));
+                    currentSentence.classList.add('highlight');
 
-                    // Scroll to keep highlighted word in view (center of teleprompter)
-                    const wordRect = currentWord.getBoundingClientRect();
+                    // Scroll to keep highlighted sentence in view (center of teleprompter)
+                    const sentenceRect = currentSentence.getBoundingClientRect();
                     const teleprompterRect = teleprompter.getBoundingClientRect();
-                    const scrollOffset = wordRect.top - teleprompterRect.top - teleprompter.clientHeight / 2 + wordRect.height / 2;
+                    const scrollOffset = sentenceRect.top - teleprompterRect.top - teleprompter.clientHeight / 2 + sentenceRect.height / 2;
                     teleprompter.scrollBy({ top: scrollOffset, behavior: 'smooth' });
                 }
 
-                currentWordIndex++;
-            }, wordDuration);
+                currentSentenceIndex++;
+            }, sentenceDuration);
         }
 
         function pauseTeleprompter() {
