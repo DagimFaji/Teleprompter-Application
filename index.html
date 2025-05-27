@@ -3,27 +3,840 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teleprompter - Welcome</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Teleprompter with Sentence Highlighting</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: background 0.5s ease;
+            overflow-x: hidden;
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #teleprompter {
+            width: 100%;
+            max-width: 800px;
+            height: 200px;
+            overflow: hidden;
+            padding: 20px;
+            font-size: 24px;
+            line-height: 1.5;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            white-space: pre-wrap;
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+            to { box-shadow: 0 6px 30px rgba(0,0,0,0.3); }
+        }
+        body.fullscreen #teleprompter {
+            max-width: 100%;
+            width: 100%;
+            height: 100vh;
+            padding: 40px;
+            top: 0;
+            left: 0;
+            transform: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 0;
+            box-shadow: none;
+        }
+        #input-section {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 240px;
+            margin-bottom: 20px;
+            align-self: center;
+        }
+        body.fullscreen #input-section {
+            display: none;
+        }
+        #script-input {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            font-size: 16px;
+            border: none;
+            border-bottom: 2px solid;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            resize: vertical;
+            animation: slideIn 0.5s ease-in;
+        }
+        #script-input:focus {
+            outline: none;
+            border-bottom-width: 3px;
+            transform: translateY(-2px);
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        #duration-input, #speed-selector, #text-size, #theme-selector {
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        #duration-input {
+            width: 120px;
+            border-bottom: 2px solid;
+        }
+        #duration-input:focus {
+            outline: none;
+            border-bottom-width: 3px;
+        }
+        #speed-selector, #text-size, #theme-selector {
+            appearance: none;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="white" d="M6 9L2 5h8z"/></svg>') no-repeat right 10px center;
+            padding-right: 30px;
+        }
+        #speed-selector:hover, #text-size:hover, #theme-selector:hover {
+            transform: scale(1.05);
+        }
+        #controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            animation: slideIn 0.7s ease-in;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+        button:active::after {
+            width: 200px;
+            height: 200px;
+        }
+        #timer {
+            font-size: 18px;
+            margin-top: 10px;
+            text-align: center;
+            transition: color 0.3s ease;
+            animation: slideIn 0.9s ease-in;
+        }
+        body.fullscreen #timer {
+            display: none;
+        }
+        .sentence {
+            transition: opacity 0.5s ease;
+            display: block;
+            margin-bottom: 15px;
+            opacity: 0.3;
+            text-align: center;
+        }
+        .highlight {
+            opacity: 1;
+            transition: all 0.3s ease;
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            padding: 10px;
+            border-radius: 8px;
+            animation: highlightPulse 1s ease-in-out infinite;
+        }
+        @keyframes highlightPulse {
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.02); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+        #exit-fullscreen {
+            display: none;
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            z-index: 1001;
+            transition: all 0.3s ease;
+        }
+        #exit-fullscreen:hover {
+            transform: scale(1.1);
+        }
+        body.fullscreen #exit-fullscreen {
+            display: block;
+        }
+        /* Theme 1: Dark */
+        body.theme-dark {
+            background: #222;
+            color: #fff;
+        }
+        body.theme-dark #teleprompter { background: #111; border-color: #555; }
+        body.theme-dark #script-input, body.theme-dark #duration-input { background: #333; color: #fff; border-bottom-color: #4CAF50; }
+        body.theme-dark #speed-selector, body.theme-dark #text-size, body.theme-dark #theme-selector { background: #333; color: #fff; border: 1px solid #555; }
+        body.theme-dark button, body.theme-dark #exit-fullscreen { background: linear-gradient(135deg, #4CAF50, #388E3C); color: white; }
+        body.theme-dark .highlight { background: #4CAF50; color: #fff; }
+        body.theme-dark #timer { color: #fff; }
+        /* Theme 2: Light */
+        body.theme-light {
+            background: #f5f5f5;
+            color: #333;
+        }
+        body.theme-light #teleprompter { background: #fff; border-color: #ccc; }
+        body.theme-light #script-input, body.theme-light #duration-input { background: #fff; color: #333; border-bottom-color: #007BFF; }
+        body.theme-light #speed-selector, body.theme-light #text-size, body.theme-light #theme-selector { background: #fff; color: #333; border: 1px solid #ccc; }
+        body.theme-light button, body.theme-light #exit-fullscreen { background: linear-gradient(135deg, #007BFF, #0056b3); color: white; }
+        body.theme-light .highlight { background: #007BFF; color: #fff; }
+        body.theme-light #timer { color: #333; }
+        /* Theme 3: Vibrant */
+        body.theme-vibrant {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            animation: gradientShift 10s ease infinite;
+        }
+        body.theme-vibrant #teleprompter { background: #1a1a1a; border-color: #ff9500; }
+        body.theme-vibrant #script-input, body.theme-vibrant #duration-input { background: #2a2a2a; color: #fff; border-bottom-color: #ff9500; }
+        body.theme-vibrant #speed-selector, body.theme-vibrant #text-size, body.theme-vibrant #theme-selector { background: #2a2a2a; color: #fff; border: 1px solid #ff9500; }
+        body.theme-vibrant button, body.theme-vibrant #exit-fullscreen { background: linear-gradient(135deg, #ff9500, #e68a00); color: #fff; }
+        body.theme-vibrant .highlight { background: #ff9500; color: #fff; }
+        body.theme-vibrant #timer { color: #fff; }
+        /* Theme 4: Neon */
+        body.theme-neon {
+            background: linear-gradient(135deg, #0f2027, #203a43);
+            color: #fff;
+            animation: gradientShift 8s ease infinite;
+        }
+        body.theme-neon #teleprompter { background: #000; border-color: #00ffcc; }
+        body.theme-neon #script-input, body.theme-neon #duration-input { background: #1c2526; color: #fff; border-bottom-color: #00ffcc; }
+        body.theme-neon #speed-selector, body.theme-neon #text-size, body.theme-neon #theme-selector { background: #1c2526; color: #fff; border: 1px solid #00ffcc; }
+        body.theme-neon button, body.theme-neon #exit-fullscreen { background: linear-gradient(135deg, #00ffcc, #00b3b3); color: #000; }
+        body.theme-neon .highlight { background: #ff00ff; color: #fff; }
+        body.theme-neon #timer { color: #00ffcc; }
+        /* Theme 5: Pastel */
+        body.theme-pastel {
+            background: linear-gradient(135deg, #f4e4e4, #e8ecef);
+            color: #333;
+            animation: gradientShift 12s ease infinite;
+        }
+        body.theme-pastel #teleprompter { background: #fff; border-color: #ffb6c1; }
+        body.theme-pastel #script-input, body.theme-pastel #duration-input { background: #fff; color: #333; border-bottom-color: #ffb6c1; }
+        body.theme-pastel #speed-selector, body.theme-pastel #text-size, body.theme-pastel #theme-selector { background: #fff; color: #333; border: 1px solid #ffb6c1; }
+        body.theme-pastel button, body.theme-pastel #exit-fullscreen { background: linear-gradient(135deg, #ffb6c1, #ff99aa); color: #333; }
+        body.theme-pastel .highlight { background: #98fb98; color: #333; }
+        body.theme-pastel #timer { color: #333; }
+        /* Theme 6: Midnight */
+        body.theme-midnight {
+            background: linear-gradient(135deg, #191970, #2f4f4f);
+            color: #fff;
+            animation: gradientShift 10s ease infinite;
+        }
+        body.theme-midnight #teleprompter { background: #0c0c1c; border-color: #4682b4; }
+        body.theme-midnight #script-input, body.theme-midnight #duration-input { background: #1c2526; color: #fff; border-bottom-color: #4682b4; }
+        body.theme-midnight #speed-selector, body.theme-midnight #text-size, body.theme-midnight #theme-selector { background: #1c2526; color: #fff; border: 1px solid #4682b4; }
+        body.theme-midnight button, body.theme-midnight #exit-fullscreen { background: linear-gradient(135deg, #4682b4, #315f72); color: #fff; }
+        body.theme-midnight .highlight { background: #6a5acd; color: #fff; }
+        body.theme-midnight #timer { color: #fff; }
+        /* Theme 7: Sunset */
+        body.theme-sunset {
+            background: linear-gradient(135deg, #ff4500, #ff8c00);
+            color: #fff;
+            animation: gradientShift 9s ease infinite;
+        }
+        body.theme-sunset #teleprompter { background: #2c1e1e; border-color: #ffd700; }
+        body.theme-sunset #script-input, body.theme-sunset #duration-input { background: #3c2f2f; color: #fff; border-bottom-color: #ffd700; }
+        body.theme-sunset #speed-selector, body.theme-sunset #text-size, body.theme-sunset #theme-selector { background: #3c2f2f; color: #fff; border: 1px solid #ffd700; }
+        body.theme-sunset button, body.theme-sunset #exit-fullscreen { background: linear-gradient(135deg, #ffd700, #e6b800); color: #333; }
+        body.theme-sunset .highlight { background: #ff6347; color: #fff; }
+        body.theme-sunset #timer { color: #fff; }
+        /* Theme 8: Ocean */
+        body.theme-ocean {
+            background: linear-gradient(135deg, #006994, #00CED1);
+            color: #fff;
+            animation: gradientShift 11s ease infinite;
+        }
+        body.theme-ocean #teleprompter { background: #003366; border-color: #40E0D0; }
+        body.theme-ocean #script-input, body.theme-ocean #duration-input { background: #004466; color: #fff; border-bottom-color: #40E0D0; }
+        body.theme-ocean #speed-selector, body.theme-ocean #text-size, body.theme-ocean #theme-selector { background: #004466; color: #fff; border: 1px solid #40E0D0; }
+        body.theme-ocean button, body.theme-ocean #exit-fullscreen { background: linear-gradient(135deg, #40E0D0, #26a69a); color: #333; }
+        body.theme-ocean .highlight { background: #00B7EB; color: #fff; }
+        body.theme-ocean #timer { color: #fff; }
+        /* Theme 9: Forest */
+        body.theme-forest {
+            background: linear-gradient(135deg, #228B22, #556B2F);
+            color: #fff;
+            animation: gradientShift 10s ease infinite;
+        }
+        body.theme-forest #teleprompter { background: #1a3c1a; border-color: #8FBC8F; }
+        body.theme-forest #script-input, body.theme-forest #duration-input { background: #2a4c2a; color: #fff; border-bottom-color: #8FBC8F; }
+        body.theme-forest #speed-selector, body.theme-forest #text-size, body.theme-forest #theme-selector { background: #2a4c2a; color: #fff; border: 1px solid #8FBC8F; }
+        body.theme-forest button, body.theme-forest #exit-fullscreen { background: linear-gradient(135deg, #8FBC8F, #6b8e23); color: #333; }
+        body.theme-forest .highlight { background: #32CD32; color: #fff; }
+        body.theme-forest #timer { color: #fff; }
+        /* Theme 10: Retro */
+        body.theme-retro {
+            background: linear-gradient(135deg, #C71585, #FF69B4);
+            color: #fff;
+            animation: gradientShift 8s ease infinite;
+        }
+        body.theme-retro #teleprompter { background: #4B0082; border-color: #FF1493; }
+        body.theme-retro #script-input, body.theme-retro #duration-input { background: #6A0DAD; color: #fff; border-bottom-color: #FF1493; }
+        body.theme-retro #speed-selector, body.theme-retro #text-size, body.theme-retro #theme-selector { background: #6A0DAD; color: #fff; border: 1px solid #FF1493; }
+        body.theme-retro button, body.theme-retro #exit-fullscreen { background: linear-gradient(135deg, #FF1493, #C71585); color: #fff; }
+        body.theme-retro .highlight { background: #FF69B4; color: #fff; }
+        body.theme-retro #timer { color: #fff; }
+        /* Theme 11: Cosmic */
+        body.theme-cosmic {
+            background: linear-gradient(135deg, #2c003e, #4b0082);
+            color: #fff;
+            animation: gradientShift 10s ease infinite;
+        }
+        body.theme-cosmic #teleprompter { background: #1c0030; border-color: #ba55d3; }
+        body.theme-cosmic #script-input, body.theme-cosmic #duration-input { background: #3c0060; color: #fff; border-bottom-color: #ba55d3; }
+        body.theme-cosmic #speed-selector, body.theme-cosmic #text-size, body.theme-cosmic #theme-selector { background: #3c0060; color: #fff; border: 1px solid #ba55d3; }
+        body.theme-cosmic button, body.theme-cosmic #exit-fullscreen { background: linear-gradient(135deg, #ba55d3, #9932cc); color: #fff; }
+        body.theme-cosmic .highlight { background: #9932cc; color: #fff; }
+        body.theme-cosmic #timer { color: #fff; }
+        /* Theme 12: Aurora */
+        body.theme-aurora {
+            background: linear-gradient(135deg, #004d40, #26a69a);
+            color: #fff;
+            animation: gradientShift 12s ease infinite;
+        }
+        body.theme-aurora #teleprompter { background: #00251a; border-color: #4db6ac; }
+        body.theme-aurora #script-input, body.theme-aurora #duration-input { background: #00332a; color: #fff; border-bottom-color: #4db6ac; }
+        body.theme-aurora #speed-selector, body.theme-aurora #text-size, body.theme-aurora #theme-selector { background: #00332a; color: #fff; border: 1px solid #4db6ac; }
+        body.theme-aurora button, body.theme-aurora #exit-fullscreen { background: linear-gradient(135deg, #4db6ac, #26a69a); color: #fff; }
+        body.theme-aurora .highlight { background: #26a69a; color: #fff; }
+        body.theme-aurora #timer { color: #fff; }
+        /* Theme 13: Velvet */
+        body.theme-velvet {
+            background: linear-gradient(135deg, #4b0082, #800080);
+            color: #fff;
+            animation: gradientShift 9s ease infinite;
+        }
+        body.theme-velvet #teleprompter { background: #2e004f; border-color: #da70d6; }
+        body.theme-velvet #script-input, body.theme-velvet #duration-input { background: #3e0066; color: #fff; border-bottom-color: #da70d6; }
+        body.theme-velvet #speed-selector, body.theme-velvet #text-size, body.theme-velvet #theme-selector { background: #3e0066; color: #fff; border: 1px solid #da70d6; }
+        body.theme-velvet button, body.theme-velvet #exit-fullscreen { background: linear-gradient(135deg, #da70d6, #c71585); color: #fff; }
+        body.theme-velvet .highlight { background: #c71585; color: #fff; }
+        body.theme-velvet #timer { color: #fff; }
+        /* Theme 14: Pop */
+        body.theme-pop {
+            background: linear-gradient(135deg, #ff4d4d, #ff9999);
+            color: #fff;
+            animation: gradientShift 8s ease infinite;
+        }
+        body.theme-pop #teleprompter { background: #330000; border-color: #ff6666; }
+        body.theme-pop #script-input, body.theme-pop #duration-input { background: #4c0000; color: #fff; border-bottom-color: #ff6666; }
+        body.theme-pop #speed-selector, body.theme-pop #text-size, body.theme-pop #theme-selector { background: #4c0000; color: #fff; border: 1px solid #ff6666; }
+        body.theme-pop button, body.theme-pop #exit-fullscreen { background: linear-gradient(135deg, #ff6666, #ff3333); color: #fff; }
+        body.theme-pop .highlight { background: #ff3333; color: #fff; }
+        body.theme-pop #timer { color: #fff; }
+        /* Theme 15: Urban */
+        body.theme-urban {
+            background: linear-gradient(135deg, #36454f, #607d8b);
+            color: #fff;
+            animation: gradientShift 10s ease infinite;
+        }
+        body.theme-urban #teleprompter { background: #1c2526; border-color: #78909c; }
+        body.theme-urban #script-input, body.theme-urban #duration-input { background: #2c3539; color: #fff; border-bottom-color: #78909c; }
+        body.theme-urban #speed-selector, body.theme-urban #text-size, body.theme-urban #theme-selector { background: #2c3539; color: #fff; border: 1px solid #78909c; }
+        body.theme-urban button, body.theme-urban #exit-fullscreen { background: linear-gradient(135deg, #78909c, #455a64); color: #fff; }
+        body.theme-urban .highlight { background: #455a64; color: #fff; }
+        body.theme-urban #timer { color: #fff; }
+        /* Theme 16: Twilight */
+        body.theme-twilight {
+            background: linear-gradient(135deg, #483d8b, #6a5acd);
+            color: #fff;
+            animation: gradientShift 11s ease infinite;
+        }
+        body.theme-twilight #teleprompter { background: #2f2f4f; border-color: #9370db; }
+        body.theme-twilight #script-input, body.theme-twilight #duration-input { background: #3f3f6f; color: #fff; border-bottom-color: #9370db; }
+        body.theme-twilight #speed-selector, body.theme-twilight #text-size, body.theme-twilight #theme-selector { background: #3f3f6f; color: #fff; border: 1px solid #9370db; }
+        body.theme-twilight button, body.theme-twilight #exit-fullscreen { background: linear-gradient(135deg, #9370db, #7b68ee); color: #fff; }
+        body.theme-twilight .highlight { background: #7b68ee; color: #fff; }
+        body.theme-twilight #timer { color: #fff; }
+        /* Theme 17: Coral */
+        body.theme-coral {
+            background: linear-gradient(135deg, #ff7f50, #f08080);
+            color: #fff;
+            animation: gradientShift 9s ease infinite;
+        }
+        body.theme-coral #teleprompter { background: #3c1f1f; border-color: #ff4040; }
+        body.theme-coral #script-input, body.theme-coral #duration-input { background: #4c2f2f; color: #fff; border-bottom-color: #ff4040; }
+        body.theme-coral #speed-selector, body.theme-coral #text-size, body.theme-coral #theme-selector { background: #4c2f2f; color: #fff; border: 1px solid #ff4040; }
+        body.theme-coral button, body.theme-coral #exit-fullscreen { background: linear-gradient(135deg, #ff4040, #ff6a6a); color: #fff; }
+        body.theme-coral .highlight { background: #ff6a6a; color: #fff; }
+        body.theme-coral #timer { color: #fff; }
+        /* Theme 18: Galaxy */
+        body.theme-galaxy {
+            background: linear-gradient(135deg, #000080, #191970);
+            color: #fff;
+            animation: gradientShift 10s ease infinite;
+        }
+        body.theme-galaxy #teleprompter { background: #00003f; border-color: #4169e1; }
+        body.theme-galaxy #script-input, body.theme-galaxy #duration-input { background: #00006f; color: #fff; border-bottom-color: #4169e1; }
+        body.theme-galaxy #speed-selector, body.theme-galaxy #text-size, body.theme-galaxy #theme-selector { background: #00006f; color: #fff; border: 1px solid #4169e1; }
+        body.theme-galaxy button, body.theme-galaxy #exit-fullscreen { background: linear-gradient(135deg, #4169e1, #1e90ff); color: #fff; }
+        body.theme-galaxy .highlight { background: #1e90ff; color: #fff; }
+        body.theme-galaxy #timer { color: #fff; }
+        /* Theme 19: Mint */
+        body.theme-mint {
+            background: linear-gradient(135deg, #20b2aa, #48d1cc);
+            color: #fff;
+            animation: gradientShift 12s ease infinite;
+        }
+        body.theme-mint #teleprompter { background: #104040; border-color: #7fffd4; }
+        body.theme-mint #script-input, body.theme-mint #duration-input { background: #205050; color: #fff; border-bottom-color: #7fffd4; }
+        body.theme-mint #speed-selector, body.theme-mint #text-size, body.theme-mint #theme-selector { background: #205050; color: 1px solid #7fffd4; }
+        body.theme-mint button, body.theme-mint #exit-fullscreen { background: linear-gradient(135deg, #7fffd4, #40e0d0); color: #333; }
+        body.theme-mint .highlight { background: #40e0d0; color: #fff; }
+        body.theme-mint #timer { color: #fff; }
+        /* Theme 20: Disco */
+        body.theme-disco {
+            background: linear-gradient(45deg, #ff00ff, #00ffff, #ff00ff);
+            color: #fff;
+            animation: discoMove 15s ease infinite;
+        }
+        @keyframes discoMove {
+            0% { background-position: 0% 0%; }
+        50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+        body.theme-disco #teleprompter { background: #1f001f; border-color: #00ff00; }
+        body.theme-disco #script-input, body.theme-disco #duration-input { background: #2f002f; color: #fff; border-bottom-color: #00ff00; }
+        body.theme-disco #speed-selector, body.theme-disco #text-size, body.theme-disco #theme-selector { background: #2f002f; color: #fff; border: 1px solid #00ff00; }
+        body.theme-disco button, body.theme-disco #exit-fullscreen { background: linear-gradient(135deg, #00ff00, #00cc00); color: #333; }
+        body.theme-disco .highlight { background: #ff00ff; color: #fff; }
+        body.theme-disco #timer { color: #fff; }
+        /* Theme 21: Starfield */
+        body.theme-starfield {
+            background: linear-gradient(135deg, #0a0015, #1a0030, #0a0015);
+            color: #fff;
+            animation: starfieldMove 20s ease infinite;
+        }
+        @keyframes starfieldMove {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 200% 200%; }
+            100% { background-position: 0% 0%; }
+        }
+        body.theme-starfield #teleprompter { background: #000015; border-color: #87ceeb; }
+        body.theme-starfield #script-input, body.theme-starfield #duration-input { background: #1a0030; color: #fff; border-bottom-color: #87ceeb; }
+        body.theme-starfield #speed-selector, #body.theme-starfield #text-size, body.theme-starfield #theme-selector { background: #1a0030; color: #fff; border: 1px solid #87ceeb; }
+        body.theme-starfield button, body.theme-starfield #exit-fullscreen { background: linear-gradient(135deg, #87ceeb, #4682b4); color: #fff; }
+        body.theme-starfield .highlight { background: #add8e6; color: #fff; }
+        body.theme-starfield #timer { color: #fff; }
+        /* Theme 22: Prism */
+        body.theme-prism {
+            background: linear-gradient(135deg, #ff4040, #40e0d0, #ff4040);
+            color: #fff;
+            animation: prismMove 10s ease infinite;
+        }
+        @keyframes prismMove {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 150% 150%; }
+            100% { background-position: 0% 0%; }
+        }
+        body.theme-prism #teleprompter { background: #1f0000; border-color: #ff00aa; }
+        body.theme-prism #script-input, body.theme-prism #duration-input { background: #2f0000; color: #fff; border-bottom-color: #ff00aa; }
+        body.theme-prism #speed-selector, body.theme-prism #text-size, body.theme-prism #theme-selector { background: #2f0000; color: #fff; border: 1px solid #ff00aa; }
+        body.theme-prism button, body.theme-prism #exit-fullscreen { background: linear-gradient(135deg, #ff00aa, #cc0088); color: #fff; }
+        body.theme-prism .highlight { background: #ff00aa; color: #fff; }
+        body.theme-prism #timer { color: #fff; }
+        /* Theme 23: Firefly */
+        body.theme-firefly {
+            background: linear-gradient(135deg, #003300, #006600, #003300);
+            color: #fff;
+            animation: fireflyMove 12s ease infinite;
+        }
+        @keyframes fireflyMove {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+        body.theme-firefly #teleprompter { background: #001a00; border-color: #99ff99; }
+        body.theme-firefly #script-input, body.theme-firefly #duration-input { background: #002600; color: #fff; border-bottom-color: #99ff99; }
+        body.theme-firefly #speed-selector, body.theme-firefly #text-size, body.theme-firefly #theme-selector { background: #002600; color: #fff; border: 1px solid #99ff99; }
+        body.theme-firefly button, body.theme-firefly #exit-fullscreen { background: linear-gradient(135deg, #99ff99, #66cc66); color: #333; }
+        body.theme-firefly .highlight { background: #66ff66; color: #fff; }
+        body.theme-firefly #timer { color: #fff; }
+        /* Theme 24: Nebula */
+        body.theme-nebula {
+            background: linear-gradient(135deg, #4b0082, #8a2be2, #4b0082);
+            color: #fff;
+            animation: nebulaMove 15s ease infinite;
+        }
+        @keyframes nebulaMove {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 200% 200%; }
+            }
+100% { background-position: 0% 0%; }
+        }
+        body.theme-nebula #teleprompter { background: #1a0030; border-color: #dda0dd; }
+        body.theme-nebula #script-input, body.theme-nebula #duration-input { background: #2a004d; color: #fff; border-bottom-color: #dda0dd; }
+        body.theme-nebula #speed-selector, body.theme-nebula #text-size, body.theme-nebula #theme-selector { background: #2a004d; color: #fff; border: 1px solid #dda0dd; }
+        body.theme-nebula button, body.theme-nebula #exit-fullscreen { background: linear-gradient(135deg, #dda0dd, #ba55d3); color: #fff; }
+        body.theme-nebula .highlight { background: #ba55d3; color: #fff; }
+        body.theme-nebula #timer { color: #fff; }
+        /* Theme 25: Pulse */
+        body.theme-pulse {
+            background: linear-gradient(135deg, #ff1493, #ff69b4, #ff1493);
+            color: #fff;
+            animation: pulseMove 8s ease infinite;
+        }
+        @keyframes pulseMove {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0%; 0%; }
+        }
+        body.theme-pulse #teleprompter { background: #330033; border-color: #ff99cc; }
+        body.theme-pulse #script-input, body.theme-pulse #duration-input { background: #4b004b; color: #fff; border-bottom-color: #ff99cc; }
+        body.theme-pulse #speed-selector, body.theme-pulse #text-size, body.theme-pulse #theme-selector { background: #4b004b; color: #fff; border: 1px solid #ff99cc; }
+        body.theme-pulse button, body.theme-pulse #exit-fullscreen { background: linear-gradient(135deg, #ff99cc, #ff69b4); color: #fff; }
+        body.theme-pulse .highlight { background: #ff69b4; color: #fff; }
+        body.theme-pulse #timer { color: #fff; }
+        /* Theme 26: Hologram */
+        body.theme-hologram {
+            background: linear-gradient(135deg, #00b7eb, #00ced1, #00b7eb);
+            color: #fff;
+            animation: hologramMove 10s ease infinite;
+        }
+        @keyframes hologramMove {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 150% 150%; }
+            100% { background-position: 0%; 0%; }
+        }
+        body.theme-hologram #teleprompter { background: #003333; border-color: #66ccff; }
+        body.theme-hologram #script-input, body.theme-hologram #duration-input { background: #004444; color: #fff; border-bottom-color: #66ccff; }
+        body.theme-hologram #speed-selector, body.theme-hologram #text-size, body.theme-hologram #theme-selector { background: #004444; color: #fff; border: 1px solid #66ccff; }
+        body.theme-hologram button, body.theme-hologram #exit-fullscreen { background: linear-gradient(135deg, #66ccff, #00b7eb); color: #fff; }
+        body.theme-hologram .highlight { background: #00b7eb; color: #fff; }
+        body.theme-hologram #timer { color: #fff; }
+        /* Theme 27: Radiance */
+        body.theme-radiance {
+            background: linear-gradient(135deg, #ffa500, #ffff00, #ffa500);
+            color: #333;
+            animation: radianceMove 12s ease infinite;
+        }
+        @keyframes radianceMove {
+            0% { background-position: 0%; 0%; }
+            50% { background-position: 100%; 100%; }
+            }
+            100% { background-position: 0%; 0%; }
+        }
+        body.theme-radiance #teleprompter { background: #332200; border-color: #ffcc00; }
+        body.theme-radiance #script-input, body.theme-radiance #duration-input { background: #443300; color: #333; border-bottom-color: #ffcc00; }
+        body.theme-radiance #speed-selector, body.theme-radiance #text-size, body.theme-radiance #theme-selector { background: #443300; color: #333; border: 1px solid #ffcc00; }
+        body.theme-radiance button, body.theme-radiance #exit-fullscreen { background: linear-gradient(135deg, #ffcc00, #ffa500); color: #333; }
+        body.theme-radiance .highlight { background: #ffa500; color: #333; }
+        body.theme-radiance #timer { color: #333; }
+        /* Theme 28: Vortex */
+        body.theme-vortex {
+            background: linear-gradient(135deg, #4b0082, #00ff00, #4b0082);
+            color: #fff;
+            animation: vortexMove 10s ease infinite;
+        }
+        @keyframes vortexMove {
+            0% { background-position: 0%; 0%; }
+            50% { background-position: 200%; 200%; }
+            }
+            100% { background-position: 0%; 0%; }
+        }
+        body.theme-vortex #teleprompter { background: #1a001a; border-color: #00cc00; }
+        body.theme-vortex #script-input, body.theme-vortex #duration-input { background: #2a002a; color: #fff; border-bottom-color: #00cc00; }
+        body.theme-vortex #speed-selector, body.theme-vortex #text-size, body.theme-vortex #theme-selector { background: #2a002a; color: #fff; border: 1px solid #00cc00; }
+        body.theme-vortex button, body.theme-vortex #exit-fullscreen { background: linear-gradient(135deg, #00cc00, #009900); color: #fff; }
+        body.theme-vortex .highlight { background: #00cc00; color: #fff; }
+        body.theme-vortex #timer { color: #fff; }
+        /* Theme 29: Spectrum */
+        body.theme-spectrum {
+            background: linear-gradient(135deg, #ff0000, #00ff00, #0000ff, #ff0000);
+            color: #fff;
+            animation: spectrumMove 15s ease infinite;
+        }
+        @keyframes spectrumMove {
+            0% { background-position: 0%; 0%; }
+            50% { background-position: 300%; 300%; }
+            }
+            100% { background-position: 0%; 0%; }
+        }
+        body.theme-spectrum #teleprompter { background: #1a1a1a; border-color: #ffcc00; }
+        body.theme-spectrum #script-input, body.theme-spectrum #duration-input { background: #2a2a2a; color: #fff; border-bottom-color: #ffcc00; }
+        body.theme-spectrum #speed-selector, body.theme-spectrum #text-size, body.theme-spectrum #theme-selector { background: #2a2a2a; color: #fff; border: 1px solid #ffcc00; }
+        body.theme-spectrum button, body.theme-spectrum #exit-fullscreen { background: linear-gradient(135deg, #ffcc00, #ff9900); color: #fff; }
+        body.theme-spectrum .highlight { background: #ffcc00; color: #fff; }
+        body.theme-spectrum #timer { color: #fff; }
+        /* Theme 30: AuroraWave */
+        body.theme-aurorawave {
+            background: linear-gradient(135deg, #00ced1, #ff00ff, #00ced1);
+            color: #fff;
+            animation: auroraWaveMove 12s ease infinite;
+        }
+        @keyframes auroraWaveMove {
+            0% { background-position: 0%; 0%; }
+            50% { background-position: 150%; 150%; }
+            }
+            100% { background-position: 0%; 0%; }
+        }
+        body.theme-aurorawave #teleprompter { background: #003333; border-color: #66ffcc; }
+        body.theme-aurorawave #script-input, body.theme-aurorawave #duration-input { background: #004444; color: #fff; border-bottom-color: #66ffcc; }
+        body.theme-aurorawave #speed-selector, body.theme-aurorawave #text-size, body.theme-aurorawave #theme-selector { background: #004444; color: #fff; border: 1px solid #66ffcc; }
+        body.theme-aurorawave button, body.theme-aurorawave #exit-fullscreen { background: linear-gradient(135deg, #66ffcc, #33cc99); color: #fff; }
+        body.theme-aurorawave .highlight { background: #66ffcc; color: #fff; }
+        body.theme-aurorawave #timer { color: #fff; }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
 </head>
 <body class="theme-dark">
-    <div class="welcome-container">
-        <h1>Welcome to Your Teleprompter</h1>
-        <p>Paste your script below or select a sample prompt to get started.</p>
+    <div id="teleprompter"></div>
+    <button id="exit-fullscreen" onclick="exitFullscreen()">Exit Full Screen</button>
+    <div id="input-section">
         <textarea id="script-input" placeholder="Paste your script here..."></textarea>
-        <div class="sample-prompts">
-            <label for="sample-selector">Try a Sample Prompt:</label>
-            <select id="sample-selector" onchange="loadSamplePrompt()">
-                <option value="">Select a sample...</option>
-                <option value="news">News Broadcast</option>
-                <option value="presentation">Presentation</option>
-                <option value="keynote">Keynote Speech</option>
-                <option value="pitch">Product Pitch</option>
-                <option value="interview">Interview</option>
+        <div id="controls">
+            <input type="number" id="duration-input" placeholder="Duration (seconds)" min="1" value="270">
+            <select id="speed-selector" onchange="updateSpeedMode()">
+                <option value="duration" selected>Duration-Based</option>
+                <option value="slow">Slow (120 WPM)</option>
+                <option value="normal">Normal (140 WPM)</option>
+                <option value="fast">Fast (160 WPM)</option>
+            </select>
+            <button onclick="startTeleprompter()">Start</button>
+            <button onclick="pauseTeleprompter()">Pause</button>
+            <button onclick="toggleFullScreen()">Full Screen</button>
+            <select id="text-size" onchange="changeTextSize()">
+                <option value="20">Small</option>
+                <option value="24" selected>Medium</option>
+                <option value="28">Large</option>
+                <option value="32">Extra Large</option>
+            </select>
+            <select id="theme-selector" onchange="changeTheme()">
+                <option value="theme-dark" selected>Dark</option>
+                <option value="theme-light">Light</option>
+                <option value="theme-vibrant">Vibrant</option>
+                <option value="theme-neon">Neon</option>
+                <option value="theme-pastel">Pastel</option>
+                <option value="theme-midnight">Midnight</option>
+                <option value="theme-sunset">Sunset</option>
+                <option value="theme-ocean">Ocean</option>
+                <option value="theme-forest">Forest</option>
+                <option value="theme-retro">Retro</option>
+                <option value="theme-cosmic">Cosmic</option>
+                <option value="theme-aurora">Aurora</option>
+                <option value="theme-velvet">Velvet</option>
+                <option value="theme-pop">Pop</option>
+                <option value="theme-urban">Urban</option>
+                <option value="theme-twilight">Twilight</option>
+                <option value="theme-coral">Coral</option>
+                <option value="theme-galaxy">Galaxy</option>
+                <option value="theme-mint">Mint</option>
+                <option value="theme-disco">Disco</option>
+                <option value="theme-starfield">Starfield</option>
+                <option value="theme-prism">Prism</option>
+                <option value="theme-firefly">Firefly</option>
+                <option value="theme-nebula">Nebula</option>
+                <option value="theme-pulse">Pulse</option>
+                <option value="theme-hologram">Hologram</option>
+                <option value="theme-radiance">Radiance</option>
+                <option value="theme-vortex">Vortex</option>
+                <option value="theme-spectrum">Spectrum</option>
+                <option value="theme-aurorawave">AuroraWave</option>
             </select>
         </div>
-        <button onclick="proceedToPrompter()" class="win11-button">Proceed</button>
+        <div id="timer">00:00</div>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        let isRunning = false;
+        let intervalId = null;
+        let currentSentenceIndex = 0;
+        let sentences = [];
+        let sentenceDuration = 0;
+        let timerInterval = null;
+        let elapsedTime = 0;
+
+        function startTeleprompter() {
+            if (isRunning) return;
+            isRunning = true;
+
+            const script = document.getElementById('script-input').value.trim();
+            const speedMode = document.getElementById('speed-selector').value;
+            let duration = parseInt(document.getElementById('duration-input').value) * 1000;
+
+            if (!script || (speedMode === 'duration' && duration <= 0)) {
+                alert('Please enter a script and a valid duration (if using Duration-Based).');
+                isRunning = false;
+                return;
+            }
+
+            // Split script into sentences
+            sentences = script.split(/(\[PAUSE\]|\[PAUSE, SMILE\]|\[PAUSE, TRANSITION\]|\.)/).filter(s => s.trim().length > 0).map(s => s.trim()).filter(s => s.length > 0);
+            if (sentences.length === 0) {
+                alert('No valid sentences found in the script.');
+                isRunning = false;
+                return;
+            }
+
+            // Calculate duration
+            if (speedMode !== 'duration') {
+                const wordCount = script.split(/\s+/).filter(w => w.length > 0).length;
+                const wpm = speedMode === 'slow' ? 120 : speedMode === 'normal' ? 140 : 160;
+                duration = (wordCount / wpm) * 60 * 1000;
+            }
+            sentenceDuration = duration / sentences.length;
+
+            // Display sentences
+            const teleprompter = document.getElementById('teleprompter');
+            teleprompter.innerHTML = sentences.map((sentence, index) => 
+                `<span class="sentence" id="sentence-${index}">${sentence}${sentence.startsWith('[') ? '' : '.'}</span>`
+            ).join('');
+
+            // Reset
+            currentSentenceIndex = 0;
+            teleprompter.scrollTop = 0;
+
+            // Start timer
+            elapsedTime = 0;
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                if (isRunning) {
+                    elapsedTime += 100;
+                    updateTimerDisplay();
+                }
+            }, 100);
+
+            // Start highlighting
+            intervalId = setInterval(() => {
+                if (currentSentenceIndex >= sentences.length) {
+                    pauseTeleprompter();
+                    return;
+                }
+
+                const currentSentence = document.getElementById(`sentence-${currentSentenceIndex}`);
+                if (currentSentence) {
+                    document.querySelectorAll('.sentence').forEach(s => s.classList.remove('highlight'));
+                    currentSentence.classList.add('highlight');
+                    if (!document.fullscreenElement) {
+                        teleprompter.scrollTo({ top: currentSentence.offsetTop - teleprompter.offsetTop - 10, behavior: 'smooth' });
+                    }
+                }
+
+                currentSentenceIndex++;
+            }, sentenceDuration);
+        }
+
+        function pauseTeleprompter() {
+            if (!isRunning) return;
+            isRunning = false;
+            clearInterval(intervalId);
+            clearInterval(timerInterval);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(elapsedTime / 60000);
+            const seconds = Math.floor((elapsedTime % 60000) / 1000);
+            document.getElementById('timer').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function changeTextSize() {
+            const size = document.getElementById('text-size').value;
+            document.getElementById('teleprompter').style.fontSize = `${size}px`;
+        }
+
+        function changeTheme() {
+            const theme = document.getElementById('theme-selector').value;
+            document.body.className = theme + (document.fullscreenElement ? ' fullscreen' : '');
+        }
+
+        function updateSpeedMode() {
+            const speedMode = document.getElementById('speed-selector').value;
+            document.getElementById('duration-input').disabled = speedMode !== 'duration';
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    document.body.classList.add('fullscreen');
+                    changeTheme();
+                }).catch(err => console.error(`Error: ${err.message}`));
+            }
+        }
+
+        function exitFullscreen() {
+            if (document.fullscreenElement) {
+                document.exitFullscreen().then(() => {
+                    document.body.classList.remove('fullscreen');
+                    changeTheme();
+                });
+            }
+        }
+
+        // Initialize script
+        document.getElementById('script-input').value = `Hi, my name is Dagim Faji Dandena, and I’m from Addis Ababa, Ethiopia. I live in Adama, just a 30-minute drive from the capital. I’m thrilled to share why I’d be a great Independent Travel Manager with DreamPort. [PAUSE, SMILE]
+
+Work Experience. For over four years, I worked in catering in Addis Ababa, serving clients at weddings, funerals, and birthdays. This sharpened my customer service and communication skills, tailoring services to diverse needs. [PAUSE]
+
+Now, I’m a Deputy IT Supervisor at a textile company in Adama. I support over 40 users, troubleshooting hardware and software, managing helpdesk systems, and collaborating across departments to ensure reliable operations. These roles built my problem-solving and interpersonal skills, perfect for travel management. [PAUSE]
+
+Education. I hold a Bachelor’s Degree in Computer Science from Hawassa University, Ethiopia. This gave me a strong foundation in system management and technical problem-solving, which I’ve built on professionally. [PAUSE, TRANSITION]
+
+Why an Independent Travel Manager? I love travel—exploring new places, cultures, and people inspires me. This role lets me combine my passion for travel with my knack for connecting with people and delivering tailored solutions. It’s a chance to grow professionally and create memorable experiences for clients. [PAUSE]
+
+Experience in Sales or Customer Service? Yes, my catering work involved direct customer service, meeting clients’ unique needs for events. In my IT role, I resolve issues for 40+ users with a 95% first-contact resolution rate, explaining solutions clearly. These skills will help me assist travel clients effectively. [PAUSE]
+
+Key Professional Strengths? My strengths are problem-solving, communication, and adaptability. I’ve tackled complex IT issues, reducing downtime by 30%. I explain technical concepts to non-technical users, which will help me present travel options clearly. I’m adaptable, quickly learning new systems, and eager to master DreamPort’s tools. [PAUSE]
+
+How will this job help achieve your goals? This role aligns with my love for travel and impacting clients’ lives. It lets me build relationships, create unforgettable travel experiences, and develop sales and customer service skills. The flexibility allows me to take ownership of my career and grow personally and professionally. [PAUSE]
+
+Any full-time commitments? My current IT role is flexible, with ample free time. I’m fully prepared to prioritize DreamPort’s training and make a smooth transition. I can dedicate myself without conflicts. [PAUSE]
+
+Can you commit 8+ hours a day, 5 days a week? Absolutely, I’m ready to commit 8 hours or more, 5 days a week, to DreamPort’s training. I’m eager to invest the time to succeed in this role. [PAUSE]
+
+Can you work night hours? Yes, I’m comfortable working nights to accommodate clients in different time zones. In my IT role, I’ve supported off-site clients to ensure 24/7 operations, and I’ll do the same for DreamPort. [PAUSE]
+
+Have you read and understood the process? Yes, I confirm I’ve read and understood the workflow, steps, and timeline of DreamPort’s learning process. I’m excited to continue. [PAUSE, SMILE]
+
+Thank you for considering me! I look forward to joining DreamPort as an Independent Travel Manager.`;
+    </script>
 </body>
 </html>
