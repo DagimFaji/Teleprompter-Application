@@ -404,6 +404,7 @@
             }
 
             // Split script into sentences, preserving action instructions
+            sentences = script.split(/(\[PAUSE\]|\[PAUSE, SMILE\]|\[PAUSE, TRANSITION\]|\.)/).filter(s => s.trim().length > 0);
             sentences = sentences.map(s => s.trim()).filter(s => s.length > 0);
             if (sentences.length === 0) {
                 alert('No valid sentences found in the script.');
@@ -415,7 +416,7 @@
             if (speedMode !== 'duration') {
                 const wordCount = script.split(/\s+/).filter(w => w.length > 0).length;
                 const wpm = speedMode === 'slow' ? 120 : speedMode === 'normal' ? 140 : 160;
-                duration = (wordCount / wpm) * 60 * 10; // Total duration in ms
+                duration = (wordCount / wpm) * 60 * 1000; // Total duration in ms
             }
             sentenceDuration = duration / sentences.length;
 
