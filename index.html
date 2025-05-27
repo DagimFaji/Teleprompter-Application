@@ -3,26 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teleprompter - Welcome</title>
+    <title>Teleprompter Home</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
-<body class="theme-dark">
+<body class="theme-aurorawave">
     <div class="welcome-container">
-        <h1>Welcome to Your Teleprompter</h1>
-        <p>Paste your script below or select a sample prompt to get started.</p>
-        <textarea id="script-input" placeholder="Paste your script here..."></textarea>
+        <h1>Welcome to the Teleprompter</h1>
+        <p>Start your presentation with ease. Paste your script and customize your experience.</p>
         <div class="sample-prompts">
-            <label for="sample-selector">Try a Sample Prompt:</label>
-            <select id="sample-selector" onchange="loadSamplePrompt()">
-                <option value="">Select a sample...</option>
-                <option value="news">News Broadcast</option>
-                <option value="presentation">Presentation</option>
-                <option value="keynote">Keynote Speech</option>
-                <option value="pitch">Product Pitch</option>
-                <option value="interview">Interview</option>
+            <label for="sample-selector">Sample Prompts:</label>
+            <select id="sample-selector">
+                <option value="">Select a sample</option>
+                <option value="Welcome to our meeting today, everyone. Let's get started with the agenda.">Meeting Intro</option>
+                <option value="Thank you for joining us. Today, we'll discuss the quarterly results.">Quarterly Results</option>
             </select>
         </div>
-        <button onclick="proceedToPrompter()" class="win11-button">Proceed</button>
+        <button id="start-button" class="win11-button">Start Prompter</button>
+    </div>
+    <div id="warning-box" class="warning-box">
+        <span id="warning-message"></span>
+        <button id="warning-close" class="win11-button">Close</button>
     </div>
     <script src="script.js"></script>
 </body>
