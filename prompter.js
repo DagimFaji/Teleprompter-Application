@@ -119,7 +119,7 @@ function startTeleprompter() {
     if (speedMode === 'duration') {
         const baseDurationPerWord = totalDuration / words.length;
         sentences.forEach(s => {
-            sentenceDurations.push(s.startsWith('[') ? 2000 : Math.max(500, baseDurationPerWord * 1000));
+            sentenceDurations.push(s.startsWith('[') ? 2000 : Math.min(1000, baseDurationPerWord));
         });
     } else {
         const wpm = speedMode === 'slow' ? 120 : speedMode === 'normal' ? 140 : 160;
@@ -129,7 +129,7 @@ function startTeleprompter() {
             } else {
                 const wordCount = s.split(/\s+/).filter(w => w.length > 0).length;
                 const duration = (wordCount * 60 / wpm) * 1000;
-                sentenceDurations.push(Math.max(500, duration));
+                sentenceDurations.push(Math.max(500, Math.min(1000, duration)));
             }
         });
     }
@@ -216,10 +216,6 @@ function changeTextSize() {
 function updateSpeed() {
     const speedMode = document.getElementById('speed-select').value;
     document.getElementById('speed-input').disabled = speedMode !== 'duration';
-    if (isRunning) {
-        pauseTeleprompter();
-        startTeleprompter(); // Restart with new speed settings
-    }
 }
 
 function toggleFullScreen() {
@@ -272,6 +268,4 @@ window.onload = function() {
     document.getElementById('home-button').addEventListener('click', () => {
         window.location.href = 'index.html';
     });
-    document.getElementById('speed-select').addEventListener('change', updateSpeed);
-    document.getElementById('speed-input').addEventListener('change', updateSpeed);
 };
