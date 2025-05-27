@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teleprompter</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-dark">
+    <div id="teleprompter"></div>
+    <button id="exit-fullscreen" class="win11-button" onclick="exitFullscreen()">Exit Full Screen</button>
+    <div id="input-section">
+        <textarea id="script-input" placeholder="Paste your script here..."></textarea>
+        <div id="controls">
+            <input type="number" id="duration-input" placeholder="Duration (seconds)" min="1" value="270">
+            <select id="speed-selector" onchange="updateSpeedMode()">
+                <option value="duration" selected>Duration-Based</option>
+                <option value="slow">Slow (120 WPM)</option>
+                <option value="normal">Normal (140 WPM)</option>
+                <option value="fast">Fast (160 WPM)</option>
+            </select>
+            <button onclick="startTeleprompter()" class="win11-button">Start</button>
+            <button onclick="pauseTeleprompter()" class="win11-button">Pause</button>
+            <button onclick="toggleFullScreen()" class="win11-button">Full Screen</button>
+            <select id="text-size" onchange="changeTextSize()">
+                <option value="20">Small</option>
+                <option value="24" selected>Medium</option>
+                <option value="28">Large</option>
+                <option value="32">Extra Large</option>
+            </select>
+        </div>
+        <div id="timer">00:00</div>
+    </div>
+    <script src="prompter.js"></script>
+</body>
+</html>
