@@ -1,5 +1,5 @@
 body {
-    font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+    font-family: 'Segoe UI', Arial, sans-serif;
     margin: 0;
     padding: 20px;
     display: flex;
@@ -46,7 +46,7 @@ body {
     box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     white-space: normal;
     position: fixed;
-    top: 50px;
+    top: 0;
     left: 50%;
     transform: translateX(-50%);
     z-index: 2;
@@ -82,7 +82,7 @@ body.fullscreen #teleprompter-container {
     border-radius: 10px;
     padding: 20px;
     position: absolute;
-    top: 60px;
+    top: 20px;
     left: 50%;
     transform: translateX(-50%);
 }
@@ -92,13 +92,13 @@ body.fullscreen #teleprompter-container {
 }
 #input-section {
     width: 100%;
-    max-width: 800px;
-    margin-top: 270px;
+    max-width: 600px;
+    margin-top: 240px;
     margin-bottom: 20px;
     align-self: center;
     display: flex;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 10px;
     justify-content: center;
 }
 body.fullscreen #input-section {
@@ -107,30 +107,28 @@ body.fullscreen #input-section {
 #input-section.hidden {
     display: none;
 }
-#fullscreen-controls {
+#input-section.fullscreen-controls {
     position: fixed;
     top: 10px;
-    left: 10px;
-    display: none;
-    gap: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    max-width: none;
+    margin-top: 0;
     background: rgba(0, 0, 0, 0.7);
     padding: 10px;
     border-radius: 8px;
     z-index: 10;
-    flex-direction: column;
 }
-body.fullscreen #fullscreen-controls {
+body.fullscreen #input-section.fullscreen-controls {
     display: flex;
 }
-.control-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+#toggle-mode, #fullscreen-toggle {
+    display: none;
 }
-.control-group label {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--input-text, #333);
+body.fullscreen #toggle-mode,
+body.fullscreen #fullscreen-toggle {
+    display: inline-block;
 }
 #script-input, #text-input, #speed-input {
     width: 100%;
@@ -164,7 +162,7 @@ body.fullscreen #fullscreen-controls {
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease, background 1s ease, color 1s ease;
-    margin: 0;
+    margin: 10px 5px;
     appearance: none;
     background: var(--input-bg, #fff) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.com/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="currentColor" d="M6 9L2 5h8z"/></svg>') no-repeat right 10px center;
     color: var(--input-text, #333);
@@ -181,16 +179,14 @@ body.fullscreen #fullscreen-controls {
 }
 .controls {
     display: flex;
-    gap: 15px;
+    gap: 10px;
     margin-bottom: 20px;
     flex-wrap: wrap;
-    justify-content: center;
     animation: slideIn 0.7s ease-in;
 }
 .win11-button {
     padding: 12px 24px;
     font-size: 16px;
-    font-weight: 500;
     cursor: pointer;
     border: none;
     border-radius: 8px;
@@ -223,16 +219,19 @@ body.fullscreen #fullscreen-controls {
     width: 200px;
     height: 200px;
 }
-.home-button {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 10;
-    min-width: 100px;
+#toggle-mode {
+    position: absolute;
+    right: 10px;
 }
-body.fullscreen .home-button {
-    top: 10px;
+body.fullscreen #toggle-mode {
+    position: static;
+}
+#fullscreen-toggle {
+    position: absolute;
     left: 10px;
+}
+body.fullscreen #fullscreen-toggle {
+    position: static;
 }
 /* Slide Toggle Styling */
 .switch {
@@ -240,6 +239,7 @@ body.fullscreen .home-button {
     display: inline-block;
     width: 60px;
     height: 34px;
+    margin: 10px 5px;
 }
 .switch input {
     opacity: 0;
