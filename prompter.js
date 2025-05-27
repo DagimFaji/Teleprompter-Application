@@ -19,30 +19,29 @@ let isAutoMode = true;
 
 function startThemeCycle() {
     if (!isAutoMode) return;
+    if (themeIntervalId) clearInterval(themeIntervalId); // Clear any existing interval
     themeIntervalId = setInterval(() => {
         if (!document.fullscreenElement && isAutoMode) {
             currentThemeIndex = (currentThemeIndex + 1) % themes.length;
             document.body.className = themes[currentThemeIndex];
-            if (document.fullscreenElement) {
-                document.body.classList.add('fullscreen');
-            }
         }
     }, 10000);
 }
 
 function stopThemeCycle() {
-    clearInterval(themeIntervalId);
+    if (themeIntervalId) clearInterval(themeIntervalId);
+    themeIntervalId = null;
 }
 
 function changeTheme() {
     const selector = document.getElementById('theme-selector');
     const selectedTheme = selector.value;
+    stopThemeCycle();
     if (selectedTheme === 'auto') {
         isAutoMode = true;
         startThemeCycle();
     } else {
         isAutoMode = false;
-        stopThemeCycle();
         document.body.className = selectedTheme;
         currentThemeIndex = themes.indexOf(selectedTheme);
     }
@@ -67,36 +66,36 @@ function hideWarning() {
     warningBox.style.display = 'none';
 }
 
+let animationFrameId = null;
+
 function toggleTeleprompter() {
     const normalToggle = document.getElementById('start-toggle');
     const fullscreenToggle = document.getElementById('fullscreen-toggle');
     if (normalToggle.checked || fullscreenToggle.checked) {
-        if (!isRunning) startTeleprompter();
+        if (!isRunning) {
+            startTeleprompter();
+        }
     } else {
-        if (isRunning) pauseTeleprompter();
+        if (isRunning) {
+            pauseTeleprompter();
+        }
     }
 }
 
 function startTeleprompter() {
     if (isRunning) return;
-    isRunning = true;
-    document.getElementById('start-toggle').checked = true;
-    document.getElementById('fullscreen-toggle').checked = true;
-
     const script = document.getElementById('text-input').value.trim();
     const speedMode = document.getElementById('speed-select').value;
     let totalDuration = parseInt(document.getElementById('speed-input').value) * 1000;
 
     if (!script) {
         showWarning('Please enter a script text.');
-        isRunning = false;
         document.getElementById('start-toggle').checked = false;
         document.getElementById('fullscreen-toggle').checked = false;
         return;
     }
     if (speedMode === 'duration' && (isNaN(totalDuration) || totalDuration <= 0)) {
         showWarning('Please enter a valid duration.');
-        isRunning = false;
         document.getElementById('start-toggle').checked = false;
         document.getElementById('fullscreen-toggle').checked = false;
         return;
@@ -108,7 +107,6 @@ function startTeleprompter() {
         .filter(s => s.length > 0);
     if (sentences.length === 0) {
         showWarning('No valid sentences found.');
-        isRunning = false;
         document.getElementById('start-toggle').checked = false;
         document.getElementById('fullscreen-toggle').checked = false;
         return;
@@ -119,7 +117,7 @@ function startTeleprompter() {
     if (speedMode === 'duration') {
         const baseDurationPerWord = totalDuration / words.length;
         sentences.forEach(s => {
-            sentenceDurations.push(s.startsWith('[') ? 2000 : Math.min(1000, baseDurationPerWord));
+            sentenceDurations.push(s.startsWith('[') ? 2000 : Math.max(500, baseDurationPerWord));
         });
     } else {
         const wpm = speedMode === 'slow' ? 120 : speedMode === 'normal' ? 140 : 160;
@@ -129,16 +127,19 @@ function startTeleprompter() {
             } else {
                 const wordCount = s.split(/\s+/).filter(w => w.length > 0).length;
                 const duration = (wordCount * 60 / wpm) * 1000;
-                sentenceDurations.push(Math.max(500, Math.min(1000, duration)));
+                sentenceDurations.push(Math.max(500, duration));
             }
         });
     }
 
+    isRunning = true;
+    document.getElementById('start-toggle').checked = true;
+    document.getElementById('fullscreen-toggle').checked = true;
     currentSentenceIndex = 0;
-    updateTeleprompter();
-
     elapsedTime = 0;
     updateTimerDisplay();
+
+    if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
         if (isRunning) {
             elapsedTime += 100;
@@ -151,24 +152,27 @@ function startTeleprompter() {
             pauseTeleprompter();
             return;
         }
-        currentSentenceIndex++;
         updateTeleprompter();
+        currentSentenceIndex++;
         if (currentSentenceIndex < sentences.length) {
-            setTimeout(advanceSentence, sentenceDurations[currentSentenceIndex - 1]);
+            animationFrameId = setTimeout(advanceSentence, sentenceDurations[currentSentenceIndex - 1]);
         } else {
             pauseTeleprompter();
         }
     }
 
     if (sentences.length > 0) {
-        setTimeout(advanceSentence, sentenceDurations[0]);
+        advanceSentence();
     }
 }
 
 function pauseTeleprompter() {
     if (!isRunning) return;
     isRunning = false;
-    clearInterval(timerInterval);
+    if (animationFrameId) clearTimeout(animationFrameId);
+    animationFrameId = null;
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
     document.getElementById('start-toggle').checked = false;
     document.getElementById('fullscreen-toggle').checked = false;
 }
@@ -216,6 +220,10 @@ function changeTextSize() {
 function updateSpeed() {
     const speedMode = document.getElementById('speed-select').value;
     document.getElementById('speed-input').disabled = speedMode !== 'duration';
+    if (isRunning) {
+        pauseTeleprompter();
+        startTeleprompter();
+    }
 }
 
 function toggleFullScreen() {
@@ -247,16 +255,16 @@ window.onload = function() {
         startTeleprompter();
     }
 
-    const savedTheme = localStorage.getItem('selectedTheme');
-    if (savedTheme && savedTheme !== 'auto') {
-        document.body.className = savedTheme;
-        isAutoMode = false;
-        document.getElementById('theme-selector').value = savedTheme;
-    } else {
+    const savedTheme = localStorage.getItem('selectedTheme') || 'auto';
+    document.getElementById('theme-selector').value = savedTheme;
+    if (savedTheme === 'auto') {
         isAutoMode = true;
         document.body.className = themes[currentThemeIndex];
-        document.getElementById('theme-selector').value = 'auto';
         startThemeCycle();
+    } else {
+        isAutoMode = false;
+        document.body.className = savedTheme;
+        currentThemeIndex = themes.indexOf(savedTheme);
     }
 
     updateSpeed();
@@ -268,4 +276,8 @@ window.onload = function() {
     document.getElementById('home-button').addEventListener('click', () => {
         window.location.href = 'index.html';
     });
+    document.getElementById('speed-select').addEventListener('change', updateSpeed);
+    document.getElementById('speed-input').addEventListener('change', updateSpeed);
+    document.getElementById('theme-selector').addEventListener('change', changeTheme);
+    document.getElementById('text-size').addEventListener('change', changeTextSize);
 };
